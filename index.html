@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111214">
+<title>AKT · Setup Kart</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#111214;--bg2:#1a1c20;--bg3:#24272d;--line:#33373f;
+  --fg:#f2f2f2;--fg2:#a9aeb8;--acc:#f26a1b;--acc2:#ff8a3d;
+  --ok:#3ccf6e;--warn:#f5c542;--bad:#e5484d;--r:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+h1,h2,h3{margin:0 0 8px}
+h2{font-size:20px}h3{font-size:16px;color:var(--fg2);text-transform:uppercase;letter-spacing:.06em;margin-top:18px}
+a{color:var(--acc2)}
+.hidden{display:none!important}
+header{position:sticky;top:0;z-index:5;background:var(--bg2);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;gap:10px}
+header .logo{font-weight:900;font-size:20px;letter-spacing:.08em;color:var(--acc)}
+header .sub{font-size:13px;color:var(--fg2);flex:1}
+header .sync{width:10px;height:10px;border-radius:50%;background:var(--ok)}
+header .sync.off{background:var(--warn)}
+main{padding:16px;max-width:720px;margin:0 auto}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;background:none;border:0;color:var(--fg2);padding:10px 2px 8px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button .ic{font-size:20px}
+nav button.on{color:var(--acc)}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.card.acc{border-color:var(--acc)}
+.row{display:flex;gap:8px;align-items:center}
+.row>*{flex:1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+label{display:block;font-size:12px;color:var(--fg2);margin:8px 0 3px}
+input,select,textarea{width:100%;background:var(--bg3);border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:10px;font-size:16px}
+textarea{min-height:70px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc)}
+button.btn{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:12px 16px;font-size:15px;font-weight:600;width:100%;margin-top:10px}
+button.btn.sec{background:var(--bg3);color:var(--fg);border:1px solid var(--line)}
+button.btn.sm{width:auto;padding:8px 12px;font-size:13px;margin-top:0}
+button.btn.danger{background:var(--bad)}
+button:disabled{opacity:.5}
+.pill{display:inline-block;background:var(--bg3);border:1px solid var(--line);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--fg2);margin:2px 4px 2px 0}
+.pill.ok{border-color:var(--ok);color:var(--ok)}.pill.warn{border-color:var(--warn);color:var(--warn)}.pill.bad{border-color:var(--bad);color:var(--bad)}.pill.acc{border-color:var(--acc);color:var(--acc)}
+.muted{color:var(--fg2);font-size:13px}
+.list .item{padding:12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.list .item:last-child{border-bottom:0}
+.list .item .t{font-weight:600}
+.list .item .s{font-size:13px;color:var(--fg2)}
+.bar{height:8px;background:var(--bg3);border-radius:6px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--ok)}
+.bar i.warn{background:var(--warn)}.bar i.bad{background:var(--bad)}
+details{border:1px solid var(--line);border-radius:10px;margin:8px 0;background:var(--bg2)}
+details summary{padding:10px 12px;cursor:pointer;font-weight:600;list-style:none}
+details summary::before{content:"▸ ";color:var(--acc)}
+details[open] summary::before{content:"▾ "}
+details .body{padding:0 12px 12px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+tr.best td{color:var(--acc2);font-weight:700}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:#000;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:20;opacity:0;transition:.2s}
+.toast.show{opacity:1}
+.login{max-width:420px;margin:40px auto;padding:16px}
+.login .logo{font-size:44px;font-weight:900;color:var(--acc);letter-spacing:.1em;text-align:center}
+.login .tag{text-align:center;color:var(--fg2);margin-bottom:24px}
+.tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}
+.tabs button{background:var(--bg3);border:1px solid var(--line);color:var(--fg2);border-radius:20px;padding:6px 12px;font-size:13px;white-space:nowrap}
+.tabs button.on{border-color:var(--acc);color:var(--acc)}
+.big{font-size:28px;font-weight:800}
+.kv{display:flex;justify-content:space-between;font-size:14px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.kv span:last-child{font-weight:600}
+.fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;background:var(--acc);color:#fff;border:0;font-size:30px;box-shadow:0 6px 18px rgba(0,0,0,.5);z-index:6}
+.switch{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
+.switch input{width:auto;transform:scale(1.4)}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN (paso 1: cuenta de Google) ============ -->
+<div id="login" class="login hidden">
+  <div class="logo">AKT</div>
+  <div class="tag">Setup · CRG KT2 · Iame X30</div>
+  <div class="card">
+    <p class="muted">Acceso solo para miembros del equipo. Inicia sesión con tu cuenta de Google.</p>
+    <button class="btn" onclick="signInGoogle()">Entrar con Google</button>
+  </div>
+  <p id="l-msg" class="muted"></p>
+</div>
+
+<!-- ============ UNIRSE (paso 2: código de equipo) ============ -->
+<div id="join" class="login hidden">
+  <div class="logo">AKT</div>
+  <div class="tag" id="j-who"></div>
+  <div class="card">
+    <label>Tu nombre</label><input id="j-nombre" placeholder="Nombre">
+    <label>Rol</label>
+    <select id="j-rol"><option value="piloto">Piloto</option><option value="mecanico">Mecánico</option></select>
+    <label>Código de equipo</label><input id="j-code" placeholder="AKT" autocapitalize="characters">
+    <button class="btn" onclick="requestAccess()">Solicitar acceso</button>
+    <button class="btn sec" onclick="createTeam()">Crear equipo nuevo con este código</button>
+    <p class="muted" style="margin-top:14px">Si el equipo ya existe, el administrador tendrá que aprobar tu solicitud.</p>
+  </div>
+  <p id="j-msg" class="muted"></p>
+  <button class="btn sec" onclick="signOutAll()">Cambiar de cuenta</button>
+</div>
+
+<!-- ============ PENDIENTE DE APROBACIÓN ============ -->
+<div id="pending" class="login hidden">
+  <div class="logo">AKT</div>
+  <div class="card">
+    <h2>Solicitud enviada</h2>
+    <p class="muted" id="p-msg"></p>
+    <p class="muted">Avisa al administrador. En cuanto te apruebe, esta pantalla cambiará sola.</p>
+    <button class="btn sec" onclick="cancelRequest()">Cancelar solicitud</button>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" class="hidden">
+<header>
+  <span class="logo">AKT</span>
+  <span class="sub" id="h-sub"></span>
+  <span class="sync" id="sync" title="Sincronizado"></span>
+</header>
+<main id="view"></main>
+<nav>
+  <button data-v="inicio" onclick="go('inicio')"><span class="ic">🏁</span>Inicio</button>
+  <button data-v="sesiones" onclick="go('sesiones')"><span class="ic">🔧</span>Setup</button>
+  <button data-v="relacion" onclick="go('relacion')"><span class="ic">⚙️</span>Relación</button>
+  <button data-v="motores" onclick="go('motores')"><span class="ic">🔩</span>Motores</button>
+  <button data-v="mas" onclick="go('mas')"><span class="ic">☰</span>Más</button>
+</nav>
+</div>
+<div id="toast" class="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+/* =========================================================
+   DATOS BASE (conocimiento común precargado)
+   ========================================================= */
+const CIRCUITOS_BASE = [
+  {id:'chiva',   nombre:'Chiva · Kartódromo Lucas Guerrero', longitud:1428, pinonRef:11, coronaRef:76, notas:'Trazado rápido con zona técnica. Relación orientativa X30 Senior; ajustar con RPM máx. en recta principal.'},
+  {id:'zuera',   nombre:'Zuera · Circuito Internacional',     longitud:1700, pinonRef:11, coronaRef:73, notas:'Circuito más largo (1.700 m), muy rápido, rebufo importante. Relación corta penaliza en recta.'},
+  {id:'vendrell',nombre:'Vendrell · Karting Club Vendrell',   longitud:1310, pinonRef:11, coronaRef:78, notas:'15 curvas, 4 horquillas, recta de +300 m. Buscar compromiso tracción/punta.'},
+  {id:'vic',     nombre:'Vic · Circuit d\'Osona',             longitud:940,  pinonRef:11, coronaRef:82, notas:'Corto y revirado (940 m). Relación larga de corona para salida de curva.'},
+  {id:'sallent', nombre:'Sallent · Karting Sallent',          longitud:1450, pinonRef:11, coronaRef:77, notas:'1.450 m, reasfaltado 2020, peraltes y cambios de rasante.'}
+];
+const CONFIG_BASE = {pistonH:10, bielaH:25, rpmObjetivo:15500, circunf:0.88};
+const PINONES=[11,12], CORONAS=[]; for(let c=69;c<=83;c++)CORONAS.push(c);
+
+/* Campos del setup CRG KT2 (grupo → lista de campos) */
+const SETUP_FIELDS = {
+ 'Tren delantero':[
+  ['altDel','Altura delantera',['Baja','Media','Alta']],
+  ['caster','Caster',['Neutro','+ (más)','- (menos)','Máx']],
+  ['camber','Camber',['Neutro','Negativo','Positivo']],
+  ['viaDel','Ancho vía delantera (mm)','num'],
+  ['conv','Convergencia (mm)','num'],
+  ['ackermann','Ackermann',['Posición 1','Posición 2','Posición 3']],
+  ['barraDel','Barra delantera',['Sin barra','Barra blanda','Barra rígida']]],
+ 'Tren trasero':[
+  ['altTras','Altura trasera',['Baja','Media','Alta']],
+  ['viaTras','Ancho vía trasera (mm)','num'],
+  ['eje','Eje (tipo/dureza)','txt'],
+  ['bujes','Bujes traseros',['Cortos','Medios','Largos']],
+  ['barraTras','Barra trasera',['Sin barra','Con barra']],
+  ['pontones','Rigidez pontones / barra lateral','txt']],
+ 'Asiento y pesos':[
+  ['asiento','Asiento (modelo/talla)','txt'],
+  ['asientoPos','Posición asiento (mm al borde / altura)','txt'],
+  ['soportes','Soportes asiento',['Sin','1','2','3','4']],
+  ['lastre','Lastre (kg y posición)','txt']],
+ 'Neumáticos y presiones':[
+  ['neu','Neumático',['Vega verde','Vega blanca','Lluvia']],
+  ['neuEstado','Estado',['Nuevos','Usados']],
+  ['neuVueltas','Vueltas del juego','num'],
+  ['pDI','Presión fría DI (bar)','num'],['pDD','Presión fría DD (bar)','num'],
+  ['pTI','Presión fría TI (bar)','num'],['pTD','Presión fría TD (bar)','num'],
+  ['pCal','Presión caliente objetivo (bar)','num']],
+ 'Freno':[
+  ['freno','Reglaje freno / pedal','txt']]
+};
+const CARB_FIELDS = [
+  ['agujaAlta','Aguja alta (vueltas)','num'],
+  ['agujaBaja','Aguja baja (vueltas)','num'],
+  ['muelle','Muelle (color / dureza)','txt'],
+  ['popoff','Pop-off (psi)','num'],
+  ['flotador','Nivel flotador / palanca','txt'],
+  ['bujia','Bujía (modelo/grado)','txt'],
+  ['mezcla','Mezcla (%) y aceite','txt'],
+  ['tempAgua','Temp. agua objetivo (°C)','num']
+];
+const COND_FIELDS = [
+  ['tempAire','Temp. aire (°C)','num'],['tempAsfalto','Temp. asfalto (°C)','num'],
+  ['humedad','Humedad (%)','num'],['presionAtm','Presión atm. (hPa)','num'],
+  ['pista','Pista',['Seca','Húmeda','Mojada','Secándose']],
+  ['goma','Goma en pista',['Poca','Media','Mucha']]
+];
+
+/* =========================================================
+   ESTADO
+   ========================================================= */
+let db, auth, uid=null, teamId=null, team=null, me=null;
+let S = {users:[],karts:[],motores:[],circuitos:[],sesiones:[],setups:[]};
+let view='inicio', subs=[], editing=null;
+
+/* =========================================================
+   UTILIDADES
+   ========================================================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=(n,d=2)=>n==null||isNaN(n)?'—':Number(n).toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmt0=n=>fmt(n,0);
+const num=v=>{if(v===''||v==null)return null;const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?null:n;};
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+function lapToMs(s){if(!s)return null;s=String(s).trim().replace(',','.');const m=s.match(/^(?:(\d+):)?(\d+(?:\.\d+)?)$/);if(!m)return null;return Math.round(((+m[1]||0)*60+ +m[2])*1000);}
+function msToLap(ms){if(ms==null)return '—';const s=ms/1000;const m=Math.floor(s/60);const r=(s-m*60).toFixed(3).replace('.',',');return (m?m+':':'')+(m&&s-m*60<10?'0':'')+r;}
+function today(){return new Date().toISOString().slice(0,10);}
+function canEdit(kartId){return me?.isAdmin||me?.canEditAll||(kartId&&me?.kartId===kartId);}
+function kartName(id){return S.karts.find(k=>k.id===id)?.nombre||'—';}
+function motorName(id){const m=S.motores.find(x=>x.id===id);return m?(m.apodo||m.serie):'—';}
+function circName(id){return S.circuitos.find(c=>c.id===id)?.nombre||'—';}
+const col=n=>db.collection('teams').doc(teamId).collection(n);
+
+/* =========================================================
+   ARRANQUE / AUTH
+   ========================================================= */
+window.addEventListener('load',async()=>{
+  if(!window.AKT_FIREBASE_CONFIG||AKT_FIREBASE_CONFIG.apiKey.startsWith('PEGA')){
+    document.body.innerHTML='<div class="login"><div class="logo">AKT</div><div class="card">Falta configurar <b>firebase-config.js</b> con los datos de tu proyecto Firebase.</div></div>';return;}
+  firebase.initializeApp(AKT_FIREBASE_CONFIG);
+  auth=firebase.auth(); db=firebase.firestore();
+  try{await db.enablePersistence({synchronizeTabs:true});}catch(e){console.warn('persistence',e.code);}
+  window.addEventListener('online',()=>$('#sync').classList.remove('off'));
+  window.addEventListener('offline',()=>$('#sync').classList.add('off'));
+  if(!navigator.onLine)$('#sync').classList.add('off');
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+  try{await auth.getRedirectResult();}catch(e){$('#l-msg').textContent='Error de acceso: '+e.message;}
+  auth.onAuthStateChanged(async u=>{
+    if(!u){showScreen('login');return;}
+    uid=u.uid; authUser=u;
+    const saved=localStorage.getItem('akt_team');
+    if(saved)watchMembership(saved);else showJoin();
+  });
+});
+
+let authUser=null, memberSub=null, S_requests=[];
+function showScreen(id){['login','join','pending','app'].forEach(s=>$('#'+s).classList.toggle('hidden',s!==id));}
+async function signInGoogle(){
+  const p=new firebase.auth.GoogleAuthProvider();
+  try{await auth.signInWithPopup(p);}
+  catch(e){ if(e.code==='auth/popup-blocked'||e.code==='auth/popup-closed-by-user'||e.code==='auth/operation-not-supported-in-this-environment'){await auth.signInWithRedirect(p);} else {$('#l-msg').textContent='Error: '+e.message;} }
+}
+async function signOutAll(){localStorage.removeItem('akt_team');if(memberSub)memberSub();subs.forEach(u=>u());await auth.signOut();location.reload();}
+function logout(){signOutAll();}
+
+function showJoin(){
+  $('#j-who').textContent=`Conectado como ${authUser.email||authUser.displayName||''}`;
+  if(!$('#j-nombre').value)$('#j-nombre').value=(authUser.displayName||'').split(' ')[0];
+  $('#j-code').value=localStorage.getItem('akt_team')||'';
+  showScreen('join');
+}
+function readJoin(){
+  const nombre=$('#j-nombre').value.trim(), rol=$('#j-rol').value, code=$('#j-code').value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g,'');
+  if(!nombre||!code){$('#j-msg').textContent='Rellena nombre y código (letras y números).';return null;}
+  return {nombre,rol,code};
+}
+/* Crear un equipo nuevo: el creador queda como administrador */
+async function createTeam(){
+  const j=readJoin();if(!j)return;
+  const ref=db.collection('teams').doc(j.code);
+  try{
+    await ref.set({nombre:'AKT',code:j.code,adminUid:uid,createdAt:Date.now(),config:CONFIG_BASE});
+  }catch(e){$('#j-msg').textContent=`No se ha podido crear "${j.code}": probablemente ya existe. Usa "Solicitar acceso".`;return;}
+  await ref.collection('users').doc(uid).set({nombre:j.nombre,rol:j.rol,email:authUser.email||'',kartId:'kart1',canEditAll:true,isAdmin:true,createdAt:Date.now()});
+  const b=db.batch();
+  CIRCUITOS_BASE.forEach((c,i)=>b.set(ref.collection('circuitos').doc(c.id),{...c,orden:i}));
+  ['Kart 1','Kart 2','Kart 3'].forEach((n,i)=>b.set(ref.collection('karts').doc('kart'+(i+1)),{nombre:n,piloto:'',mecanico:'',chasisSerie:'',orden:i}));
+  await b.commit();
+  localStorage.setItem('akt_team',j.code);
+  watchMembership(j.code);
+}
+/* Pedir acceso a un equipo existente: queda pendiente hasta que el admin apruebe */
+async function requestAccess(){
+  const j=readJoin();if(!j)return;
+  try{
+    await db.collection('teams').doc(j.code).collection('requests').doc(uid).set({uid,nombre:j.nombre,rol:j.rol,email:authUser.email||'',createdAt:Date.now()});
+  }catch(e){$('#j-msg').textContent='Error: '+e.message;return;}
+  localStorage.setItem('akt_team',j.code);
+  watchMembership(j.code);
+}
+async function cancelRequest(){
+  const code=localStorage.getItem('akt_team');
+  if(code){try{await db.collection('teams').doc(code).collection('requests').doc(uid).delete();}catch(e){}}
+  localStorage.removeItem('akt_team');if(memberSub)memberSub();showJoin();
+}
+/* Escucha mi propio doc de usuario: si existe soy miembro; si no, pendiente o sin solicitud */
+function watchMembership(code){
+  if(memberSub)memberSub();
+  memberSub=db.collection('teams').doc(code).collection('users').doc(uid).onSnapshot(async d=>{
+    if(d.exists){ if(teamId!==code)await loadTeam(code); return; }
+    // no soy miembro (o me han expulsado)
+    if(teamId===code){subs.forEach(u=>u());subs=[];teamId=null;team=null;me=null;}
+    const r=await db.collection('teams').doc(code).collection('requests').doc(uid).get().catch(()=>null);
+    if(r&&r.exists){$('#p-msg').textContent=`Equipo ${code} · ${r.data().nombre} (${r.data().rol})`;showScreen('pending');}
+    else showJoin();
+  },err=>{$('#l-msg').textContent='Sin permiso: '+err.message;showJoin();});
+}
+
+async function loadTeam(code){
+  const ref=db.collection('teams').doc(code);
+  teamId=code;
+  subs.forEach(u=>u()); subs=[];
+  subs.push(ref.onSnapshot(d=>{team={id:code,...d.data()};render();}));
+  // mi propio usuario (todos pueden leerlo)
+  subs.push(ref.collection('users').doc(uid).onSnapshot(d=>{
+    me=d.exists?{id:d.id,...d.data()}:null;
+    if(me?.isAdmin&&!window._adminSubs){window._adminSubs=true;
+      subs.push(ref.collection('users').onSnapshot(qs=>{S.users=qs.docs.map(x=>({id:x.id,...x.data()}));render();}));
+      subs.push(ref.collection('requests').onSnapshot(qs=>{S_requests=qs.docs.map(x=>({id:x.id,...x.data()}));render();}));
+    }
+    render();}));
+  const order={circuitos:'orden',karts:'orden',sesiones:null,setups:null,motores:null};
+  for(const n of Object.keys(order)){
+    let q=col(n); if(order[n])q=q.orderBy(order[n]);
+    subs.push(q.onSnapshot(qs=>{S[n]=qs.docs.map(d=>({id:d.id,...d.data()}));render();},
+      err=>toast('Sin permiso para leer '+n)));
+  }
+  showScreen('app');
+  return true;
+}
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+function go(v){view=v;editing=null;render();window.scrollTo(0,0);}
+function render(){
+  if(!team||!me)return;
+  $('#h-sub').textContent=`${team.nombre} · ${me.nombre}${me.isAdmin?' (admin)':''}${me.kartId?' · '+kartName(me.kartId):''}`;
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===view));
+  const R={inicio,sesiones,relacion,motores,mas,circuitos:vCircuitos,setups:vSetups,karts:vKarts,usuarios:vUsuarios,ajustes:vAjustes};
+  $('#view').innerHTML=(R[view]||inicio)();
+}
+
+/* ---------- INICIO ---------- */
+function inicio(){
+  const alerts=S.motores.flatMap(m=>motorAlerts(m).map(a=>({m,...a})));
+  const myK=me.kartId;
+  const ult=S.sesiones.filter(s=>!myK||s.kartId===myK).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).slice(0,5);
+  return `
+  <h2>Hola, ${esc(me.nombre)} 👋</h2>
+  ${me.isAdmin&&S_requests.length?`<div class="card acc" onclick="go('usuarios')"><b>👥 ${S_requests.length} solicitud${S_requests.length>1?'es':''} de acceso pendiente${S_requests.length>1?'s':''}</b><div class="muted">Toca para aprobar o rechazar</div></div>`:''}
+  ${alerts.length?`<div class="card acc"><h3 style="margin-top:0;color:var(--acc)">⚠️ Mantenimiento</h3>${alerts.map(a=>`<div class="kv"><span>${esc(motorName(a.m.id))} · ${a.pieza}</span><span class="pill ${a.level}">${a.txt}</span></div>`).join('')}</div>`:''}
+  <div class="grid2">
+    <div class="card" onclick="newSesion()"><div class="big">+</div><div class="muted">Nueva sesión</div></div>
+    <div class="card" onclick="go('relacion')"><div class="big">⚙️</div><div class="muted">Calcular relación</div></div>
+  </div>
+  <h3>Últimas sesiones${myK?' · '+esc(kartName(myK)):''}</h3>
+  <div class="card list">${ult.length?ult.map(sesRow).join(''):'<div class="muted">Sin sesiones todavía.</div>'}</div>
+  <h3>Karts</h3>
+  <div class="card list">${S.karts.map(k=>`<div class="item"><div><div class="t">${esc(k.nombre)}</div><div class="s">${esc(k.piloto||'—')} / ${esc(k.mecanico||'—')} · ${S.motores.filter(m=>m.kartId===k.id).length} motores</div></div>${canEdit(k.id)?'<span class="pill ok">editable</span>':'<span class="pill">lectura</span>'}</div>`).join('')}</div>`;
+}
+function sesRow(s){
+  return `<div class="item" onclick="openSesion('${s.id}')"><div><div class="t">${esc(s.fecha)} · ${esc(circName(s.circuitoId))}</div><div class="s">${esc(kartName(s.kartId))} · ${esc(s.tipo)} · ${s.trans?.pinon||'?'}/${s.trans?.corona||'?'} · ${esc(s.setup?.neu||'')}</div></div><div class="pill acc">${msToLap(s.result?.mejorVueltaMs)}</div></div>`;
+}
+
+/* ---------- SESIONES / SETUP ---------- */
+function sesiones(){
+  if(editing)return formSesion(editing);
+  const f=window._fk||'';
+  const list=S.sesiones.filter(s=>!f||s.kartId===f).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')||(b.createdAt||0)-(a.createdAt||0));
+  return `<h2>Sesiones y setup</h2>
+  <div class="tabs"><button class="${!f?'on':''}" data-k="" onclick="setFk(this.dataset.k)">Todos</button>${S.karts.map(k=>`<button class="${f===k.id?'on':''}" data-k="${k.id}" onclick="setFk(this.dataset.k)">${esc(k.nombre)}</button>`).join('')}</div>
+  <div class="row"><button class="btn sec sm" onclick="go('setups')">📁 Setups guardados (${S.setups.length})</button><button class="btn sec sm" onclick="go('circuitos')">🏟️ Circuitos</button></div>
+  <div class="card list" style="margin-top:12px">${list.length?list.map(sesRow).join(''):'<div class="muted">Sin sesiones.</div>'}</div>
+  <button class="fab" onclick="newSesion()">+</button>`;
+}
+function emptySesion(){
+  const cir=S.circuitos[0];
+  return {kartId:me.kartId||S.karts[0]?.id,motorId:S.motores.find(m=>m.kartId===(me.kartId||S.karts[0]?.id)&&m.activo!==false)?.id||'',circuitoId:cir?.id||'',fecha:today(),tipo:'Entreno',nombre:'',
+    cond:{},setup:{},carb:{},trans:{pinon:cir?.pinonRef||11,corona:cir?.coronaRef||78,cadena:''},result:{mejorVuelta:'',rpmMax:'',rpmMin:''},horas:'',comentarios:''};
+}
+function newSesion(){view='sesiones';editing={...emptySesion(),_new:true};render();window.scrollTo(0,0);}
+function openSesion(id){const s=S.sesiones.find(x=>x.id===id);if(!s)return;view='sesiones';editing=JSON.parse(JSON.stringify(s));editing.result.mejorVuelta=msToLap(s.result?.mejorVueltaMs);if(editing.result.mejorVuelta==='—')editing.result.mejorVuelta='';render();window.scrollTo(0,0);}
+function field(prefix,[k,label,type],val){
+  const id=`${prefix}-${k}`;
+  if(Array.isArray(type))return `<label>${label}</label><select id="${id}"><option value="">—</option>${type.map(o=>`<option ${val===o?'selected':''}>${o}</option>`).join('')}</select>`;
+  return `<label>${label}</label><input id="${id}" ${type==='num'?'inputmode="decimal"':''} value="${esc(val??'')}">`;
+}
+function formSesion(s){
+  const ed=canEdit(s.kartId);
+  const motors=S.motores.filter(m=>m.kartId===s.kartId);
+  const grp=(title,fields,obj,prefix,open)=>`<details ${open?'open':''}><summary>${title}</summary><div class="body grid2">${fields.map(f=>field(prefix,f,obj?.[f[0]])).join('')}</div></details>`;
+  return `<h2>${s._new?'Nueva sesión':'Sesión'}</h2>
+  ${!ed?'<p class="pill warn">Solo lectura: no tienes permiso para editar este kart</p>':''}
+  <div class="card">
+    <div class="grid2">
+      <div><label>Kart</label><select id="s-kart" onchange="editing.kartId=this.value;editing.motorId='';render()">${S.karts.map(k=>`<option value="${k.id}" ${s.kartId===k.id?'selected':''}>${esc(k.nombre)}</option>`).join('')}</select></div>
+      <div><label>Motor</label><select id="s-motor">${motors.length?motors.map(m=>`<option value="${m.id}" ${s.motorId===m.id?'selected':''}>${esc(m.apodo||m.serie)}</option>`).join(''):'<option value="">(sin motores)</option>'}</select></div>
+      <div><label>Circuito</label><select id="s-cir" onchange="onCircuitChange(this.value)">${S.circuitos.map(c=>`<option value="${c.id}" ${s.circuitoId===c.id?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select></div>
+      <div><label>Fecha</label><input id="s-fecha" type="date" value="${s.fecha}"></div>
+      <div><label>Tipo</label><select id="s-tipo">${['Entreno','Cronos','Manga','Final','Test'].map(t=>`<option ${s.tipo===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div><label>Nombre / tanda</label><input id="s-nombre" value="${esc(s.nombre)}" placeholder="Tanda 3, ruedas nuevas"></div>
+    </div>
+    <div class="row" style="margin-top:10px"><button class="btn sec sm" onclick="pickSetup()">📥 Cargar setup guardado</button><button class="btn sec sm" onclick="copyLastSesion()">⏮ Copiar última sesión</button></div>
+  </div>
+  <details open><summary>Transmisión</summary><div class="body grid3">
+    <div><label>Piñón</label><select id="t-pinon">${PINONES.map(p=>`<option ${+s.trans?.pinon===p?'selected':''}>${p}</option>`).join('')}</select></div>
+    <div><label>Corona</label><select id="t-corona">${CORONAS.map(c=>`<option ${+s.trans?.corona===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div><label>Cadena (eslabones)</label><input id="t-cadena" inputmode="numeric" value="${esc(s.trans?.cadena)}"></div>
+  </div></details>
+  ${grp('Condiciones',COND_FIELDS,s.cond,'c',true)}
+  ${Object.entries(SETUP_FIELDS).map(([g,fs])=>grp(g,fs,s.setup,'u')).join('')}
+  ${grp('Carburación (Tillotson HW-27A)',CARB_FIELDS,s.carb,'k',true)}
+  <details open><summary>Resultado</summary><div class="body">
+    <div class="grid3">
+      <div><label>Mejor vuelta</label><input id="r-vuelta" placeholder="52,345" value="${esc(s.result?.mejorVuelta)}"></div>
+      <div><label>RPM máx</label><input id="r-rpmmax" inputmode="numeric" value="${esc(s.result?.rpmMax)}"></div>
+      <div><label>RPM mín</label><input id="r-rpmmin" inputmode="numeric" value="${esc(s.result?.rpmMin)}"></div>
+    </div>
+    <label>Horas de motor en esta sesión ${s._new?'(se suman al motor al guardar)':'(ya contabilizadas)'}</label><input id="r-horas" inputmode="decimal" value="${esc(s.horas)}" placeholder="0,5" ${s._new?'':'disabled'}>
+    <label>Comentarios del piloto</label><textarea id="r-com">${esc(s.comentarios)}</textarea>
+  </div></details>
+  ${ed?`<button class="btn" onclick="saveSesion()">💾 Guardar sesión</button>
+  <button class="btn sec" onclick="saveAsSetup()">⭐ Guardar este setup con nombre</button>
+  ${!s._new?`<button class="btn danger" onclick="delSesion('${s.id}')">Eliminar sesión</button>`:''}`:''}
+  <button class="btn sec" onclick="editing=null;render()">Volver</button>`;
+}
+function onCircuitChange(id){readForm();editing.circuitoId=id;const c=S.circuitos.find(x=>x.id===id);if(c&&editing._new){editing.trans.pinon=c.pinonRef;editing.trans.corona=c.coronaRef;}render();}
+function readForm(){
+  const s=editing;const g=id=>document.getElementById(id)?.value??'';
+  s.kartId=g('s-kart');s.motorId=g('s-motor');s.circuitoId=g('s-cir');s.fecha=g('s-fecha');s.tipo=g('s-tipo');s.nombre=g('s-nombre');
+  s.trans={pinon:+g('t-pinon'),corona:+g('t-corona'),cadena:g('t-cadena')};
+  const rd=(fields,prefix)=>{const o={};fields.forEach(f=>{const v=g(`${prefix}-${f[0]}`);if(v!=='')o[f[0]]=f[2]==='num'?num(v):v;});return o;};
+  s.cond=rd(COND_FIELDS,'c');s.carb=rd(CARB_FIELDS,'k');
+  s.setup={};Object.values(SETUP_FIELDS).forEach(fs=>Object.assign(s.setup,rd(fs,'u')));
+  s.result={mejorVuelta:g('r-vuelta'),mejorVueltaMs:lapToMs(g('r-vuelta')),rpmMax:num(g('r-rpmmax')),rpmMin:num(g('r-rpmmin'))};
+  s.horas=num(g('r-horas'));s.comentarios=g('r-com');
+}
+async function saveSesion(){
+  readForm();const s=editing;
+  if(!canEdit(s.kartId))return toast('Sin permiso');
+  const data={...s};delete data._new;delete data.id;delete data.result.mejorVuelta;
+  try{
+    if(s._new){
+      data.createdBy=uid;data.createdAt=Date.now();
+      await col('sesiones').add(data);
+      if(s.horas&&s.motorId){const inc=firebase.firestore.FieldValue.increment(s.horas);
+        await col('motores').doc(s.motorId).update({horas:inc,pistonHoras:inc,bielaHoras:inc});}
+    }else{data.updatedAt=Date.now();await col('sesiones').doc(s.id).set(data,{merge:true});}
+    toast('Sesión guardada');editing=null;render();
+  }catch(e){toast('Error: '+e.message);}
+}
+async function delSesion(id){if(!confirm('¿Eliminar la sesión? Las horas de motor no se restan.'))return;await col('sesiones').doc(id).delete();editing=null;render();}
+async function saveAsSetup(){
+  readForm();const nombre=prompt('Nombre del setup:',`${circName(editing.circuitoId).split(' ·')[0]} ${editing.fecha}`);if(!nombre)return;
+  await col('setups').add({nombre,kartId:editing.kartId,circuitoId:editing.circuitoId,setup:editing.setup,carb:editing.carb,trans:editing.trans,cond:editing.cond,mejorVueltaMs:editing.result.mejorVueltaMs||null,createdBy:uid,createdAt:Date.now()});
+  toast('Setup guardado');
+}
+function pickSetup(){
+  readForm();
+  const opts=S.setups.filter(x=>x.circuitoId===editing.circuitoId).concat(S.setups.filter(x=>x.circuitoId!==editing.circuitoId));
+  if(!opts.length)return toast('No hay setups guardados');
+  const idx=prompt('Elige setup (número):\n'+opts.map((x,i)=>`${i+1}. ${x.nombre} · ${circName(x.circuitoId).split(' ·')[0]} · ${msToLap(x.mejorVueltaMs)}`).join('\n'));
+  const x=opts[+idx-1];if(!x)return;
+  Object.assign(editing,{setup:{...x.setup},carb:{...x.carb},trans:{...x.trans}});render();toast('Setup cargado: '+x.nombre);
+}
+function copyLastSesion(){
+  readForm();const last=S.sesiones.filter(x=>x.kartId===editing.kartId).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))[0];
+  if(!last)return toast('No hay sesiones previas de este kart');
+  Object.assign(editing,{setup:{...last.setup},carb:{...last.carb},trans:{...last.trans},cond:{...last.cond},circuitoId:last.circuitoId});render();toast('Copiado de '+last.fecha);
+}
+function vSetups(){
+  return `<h2>Setups guardados</h2>
+  <div class="card list">${S.setups.length?[...S.setups].sort((a,b)=>b.createdAt-a.createdAt).map(x=>`<div class="item"><div><div class="t">${esc(x.nombre)}</div><div class="s">${esc(circName(x.circuitoId))} · ${esc(kartName(x.kartId))} · ${x.trans?.pinon}/${x.trans?.corona} · ${msToLap(x.mejorVueltaMs)}</div><div class="s">${esc(x.setup?.neu||'')} · aguja A ${fmt(x.carb?.agujaAlta)} / B ${fmt(x.carb?.agujaBaja)}</div></div>
+    <div><button class="btn sec sm" onclick="useSetup('${x.id}')">Usar</button> ${canEdit(x.kartId)?`<button class="btn sec sm" onclick="dupSetup('${x.id}')">Copiar</button> <button class="btn danger sm" onclick="delSetup('${x.id}')">✕</button>`:''}</div></div>`).join(''):'<div class="muted">Guarda un setup desde una sesión con “⭐ Guardar este setup con nombre”.</div>'}</div>
+  <button class="btn sec" onclick="go('sesiones')">Volver</button>`;
+}
+function useSetup(id){const x=S.setups.find(y=>y.id===id);editing={...emptySesion(),_new:true,circuitoId:x.circuitoId,setup:{...x.setup},carb:{...x.carb},trans:{...x.trans}};view='sesiones';render();}
+async function dupSetup(id){const x=S.setups.find(y=>y.id===id);const n=prompt('Nuevo nombre:',x.nombre+' (copia)');if(!n)return;const d={...x,nombre:n,createdAt:Date.now(),createdBy:uid};delete d.id;await col('setups').add(d);}
+async function delSetup(id){if(confirm('¿Eliminar setup?'))await col('setups').doc(id).delete();}
+
+/* ---------- RELACIÓN ---------- */
+function setFk(k){window._fk=k;render();}
+function relCircuit(id){const c=S.circuitos.find(x=>x.id===id);_rel.cir=id;if(c){_rel.pinon=c.pinonRef;_rel.corona=c.coronaRef;}render();}
+function relSet(el){const f=el.dataset.f;_rel[f]=(f==='pinon'||f==='corona')?+el.value:el.value;render();}
+function relacion(){
+  const cfg=team.config||CONFIG_BASE;
+  const st=window._rel||(window._rel={cir:S.circuitos[0]?.id||'',pinon:11,corona:78,rpmObs:'',rpmObj:cfg.rpmObjetivo,circ:cfg.circunf});
+  const c=S.circuitos.find(x=>x.id===st.cir);
+  const ratio=st.corona/st.pinon;
+  const rpmObs=num(st.rpmObs), rpmObj=num(st.rpmObj)||cfg.rpmObjetivo, circ=num(st.circ)||cfg.circunf;
+  const kmh=(rpm,r)=>rpm/r*circ*60/1000;
+  let needed=null;if(rpmObs)needed=ratio*rpmObj/rpmObs;
+  const combos=PINONES.flatMap(p=>CORONAS.map(co=>({p,co,r:co/p}))).sort((a,b)=>a.r-b.r);
+  const target=needed||ratio;
+  const rows=combos.map(x=>({...x,d:x.r-target})).sort((a,b)=>Math.abs(a.d)-Math.abs(b.d)).slice(0,9).sort((a,b)=>a.r-b.r);
+  const hist=S.sesiones.filter(s=>s.circuitoId===st.cir&&s.result?.rpmMax).sort((a,b)=>(a.result.mejorVueltaMs||1e9)-(b.result.mejorVueltaMs||1e9)).slice(0,5);
+  return `<h2>Calculadora de relación</h2>
+  <div class="card">
+    <label>Circuito</label><select onchange="relCircuit(this.value)">${S.circuitos.map(x=>`<option value="${x.id}" ${st.cir===x.id?'selected':''}>${esc(x.nombre)}</option>`).join('')}</select>
+    ${c?`<p class="muted">${fmt0(c.longitud)} m · referencia ${c.pinonRef}/${c.coronaRef} (${fmt(c.coronaRef/c.pinonRef)}) · ${esc(c.notas||'')}</p>`:''}
+    <div class="grid2">
+      <div><label>Piñón actual</label><select data-f="pinon" onchange="relSet(this)">${PINONES.map(p=>`<option ${st.pinon===p?'selected':''}>${p}</option>`).join('')}</select></div>
+      <div><label>Corona actual</label><select data-f="corona" onchange="relSet(this)">${CORONAS.map(x=>`<option ${st.corona===x?'selected':''}>${x}</option>`).join('')}</select></div>
+      <div><label>RPM máx observadas (recta)</label><input inputmode="numeric" value="${esc(st.rpmObs)}" data-f="rpmObs" onchange="relSet(this)" placeholder="15200"></div>
+      <div><label>RPM máx objetivo</label><input inputmode="numeric" value="${esc(st.rpmObj)}" data-f="rpmObj" onchange="relSet(this)"></div>
+      <div><label>Circunf. rueda trasera (m)</label><input inputmode="decimal" value="${esc(String(st.circ).replace('.',','))}" data-f="circ" onchange="relSet(this)"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="kv"><span>Relación actual ${st.pinon}/${st.corona}</span><span>${fmt(ratio)}</span></div>
+    <div class="kv"><span>Velocidad teórica a ${fmt0(rpmObj)} rpm</span><span>${fmt(kmh(rpmObj,ratio),1)} km/h</span></div>
+    ${rpmObs?`<div class="kv"><span>Velocidad real a ${fmt0(rpmObs)} rpm</span><span>${fmt(kmh(rpmObs,ratio),1)} km/h</span></div>
+    <div class="kv"><span>Relación necesaria para ${fmt0(rpmObj)} rpm</span><span style="color:var(--acc2)">${fmt(needed)}</span></div>
+    <p class="muted" style="margin-top:8px">${rpmObs<rpmObj?`Te faltan ${fmt0(rpmObj-rpmObs)} rpm: <b>acorta</b> (sube corona o baja piñón). Ganarás salida de curva y perderás algo de punta.`:rpmObs>rpmObj?`Te sobran ${fmt0(rpmObs-rpmObj)} rpm: <b>alarga</b> (baja corona o sube piñón). Más punta en recta, menos tracción en lentas.`:'Estás en el objetivo.'}</p>`:'<p class="muted">Introduce las RPM máximas de telemetría para que te proponga la relación.</p>'}
+  </div>
+  <div class="card"><h3 style="margin-top:0">Combinaciones más cercanas</h3>
+  <table><tr><th>Piñón/Corona</th><th>Relación</th><th>Δ</th><th>km/h @obj</th></tr>
+  ${rows.map(x=>`<tr class="${Math.abs(x.d)<0.02?'best':''}"><td>${x.p}/${x.co}</td><td>${fmt(x.r)}</td><td>${(x.d>=0?'+':'')+fmt(x.d)}</td><td>${fmt(kmh(rpmObj,x.r),1)}</td></tr>`).join('')}
+  </table><p class="muted">Un diente de corona con piñón 11 ≈ 0,09 de relación (≈ 110–130 rpm en recta). Con piñón 12 el salto por diente es más fino (≈ 0,08).</p></div>
+  ${hist.length?`<div class="card"><h3 style="margin-top:0">Histórico en este circuito (mejores vueltas)</h3><table><tr><th>Fecha</th><th>Kart</th><th>Rel.</th><th>RPM máx</th><th>Vuelta</th></tr>${hist.map(s=>`<tr><td>${esc(s.fecha)}</td><td>${esc(kartName(s.kartId))}</td><td>${s.trans?.pinon}/${s.trans?.corona}</td><td>${fmt0(s.result.rpmMax)}</td><td>${msToLap(s.result.mejorVueltaMs)}</td></tr>`).join('')}</table></div>`:''}`;
+}
+
+/* ---------- MOTORES ---------- */
+function motorAlerts(m){
+  const cfg=team.config||CONFIG_BASE;const out=[];
+  const chk=(pieza,h,lim)=>{const p=h/lim;if(p>=1)out.push({pieza,level:'bad',txt:`${fmt(h,1)} h / ${lim} h · CAMBIAR`});else if(p>=.8)out.push({pieza,level:'warn',txt:`${fmt(h,1)} h / ${lim} h · pronto`});};
+  chk('Pistón',m.pistonHoras||0,cfg.pistonH);chk('Biela',m.bielaHoras||0,cfg.bielaH);return out;
+}
+function motores(){
+  const cfg=team.config||CONFIG_BASE;
+  const bar=(h,lim)=>{const p=Math.min(100,(h/lim)*100);return `<div class="bar"><i class="${p>=100?'bad':p>=80?'warn':''}" style="width:${p}%"></i></div>`;};
+  return `<h2>Motores Iame X30</h2>
+  <p class="muted">Intervalos: pistón ${cfg.pistonH} h · biela ${cfg.bielaH} h (ajustables en Más → Ajustes). Las horas se suman automáticamente al guardar sesiones.</p>
+  ${S.karts.map(k=>`<h3>${esc(k.nombre)} · ${esc(k.piloto||'')}</h3>
+    ${S.motores.filter(m=>m.kartId===k.id).map(m=>`<div class="card ${m.activo===false?'':''}" style="${m.activo===false?'opacity:.6':''}">
+      <div class="row"><div><b>${esc(m.apodo||m.serie)}</b> <span class="muted">${esc(m.serie)}</span>${m.activo===false?' <span class="pill">retirado</span>':''}</div><div style="text-align:right;flex:0"><span class="big">${fmt(m.horas||0,1)}</span><span class="muted"> h</span></div></div>
+      <div class="kv"><span>Pistón · ${fmt(m.pistonHoras||0,1)} h ${m.pistonFecha?'· cambiado '+esc(m.pistonFecha):''}</span>${canEdit(k.id)?`<button class="btn sec sm" onclick="resetPieza('${m.id}','piston')">Cambiado</button>`:''}</div>${bar(m.pistonHoras||0,cfg.pistonH)}
+      <div class="kv" style="margin-top:8px"><span>Biela · ${fmt(m.bielaHoras||0,1)} h ${m.bielaFecha?'· cambiada '+esc(m.bielaFecha):''}</span>${canEdit(k.id)?`<button class="btn sec sm" onclick="resetPieza('${m.id}','biela')">Cambiada</button>`:''}</div>${bar(m.bielaHoras||0,cfg.bielaH)}
+      ${canEdit(k.id)?`<div class="row" style="margin-top:10px"><button class="btn sec sm" onclick="addHoras('${m.id}')">+ horas</button><button class="btn sec sm" onclick="editMotor('${m.id}')">Editar</button></div>`:''}
+    </div>`).join('')||'<p class="muted">Sin motores.</p>'}
+    ${canEdit(k.id)?`<button class="btn sec sm" onclick="editMotor(null,'${k.id}')">+ Añadir motor a ${esc(k.nombre)}</button>`:''}`).join('')}`;
+}
+async function resetPieza(id,p){
+  const f=prompt('Fecha del cambio (AAAA-MM-DD):',today());if(!f)return;
+  await col('motores').doc(id).update(p==='piston'?{pistonHoras:0,pistonFecha:f}:{bielaHoras:0,bielaFecha:f});toast('Contador reiniciado');
+}
+async function addHoras(id){
+  const v=num(prompt('Horas a sumar (ej. 0,5):'));if(!v)return;const inc=firebase.firestore.FieldValue.increment(v);
+  await col('motores').doc(id).update({horas:inc,pistonHoras:inc,bielaHoras:inc});
+}
+async function editMotor(id,kartId){
+  const m=id?S.motores.find(x=>x.id===id):{kartId,serie:'',apodo:'',horas:0,pistonHoras:0,bielaHoras:0,activo:true};
+  const serie=prompt('Número de serie:',m.serie);if(serie==null)return;
+  const apodo=prompt('Apodo:',m.apodo);if(apodo==null)return;
+  const d={...m,serie,apodo};delete d.id;
+  if(id){
+    const h=num(prompt('Horas totales:',String(m.horas||0).replace('.',',')));if(h!=null)d.horas=h;
+    const ph=num(prompt('Horas pistón actual:',String(m.pistonHoras||0).replace('.',',')));if(ph!=null)d.pistonHoras=ph;
+    const bh=num(prompt('Horas biela actual:',String(m.bielaHoras||0).replace('.',',')));if(bh!=null)d.bielaHoras=bh;
+    d.activo=confirm('¿Motor activo? (Cancelar = retirado)');
+    await col('motores').doc(id).set(d,{merge:true});
+  }else{d.createdAt=Date.now();await col('motores').add(d);}
+  toast('Motor guardado');
+}
+
+/* ---------- MÁS ---------- */
+function mas(){
+  return `<h2>Más</h2>
+  <div class="card list">
+    <div class="item" onclick="go('circuitos')"><div class="t">🏟️ Circuitos</div><span>›</span></div>
+    <div class="item" onclick="go('setups')"><div class="t">📁 Setups guardados</div><span>›</span></div>
+    <div class="item" onclick="go('karts')"><div class="t">🏎️ Karts y pilotos</div><span>›</span></div>
+    ${me.isAdmin?`<div class="item" onclick="go('usuarios')"><div class="t">👥 Usuarios y permisos</div><span>›</span></div>
+    <div class="item" onclick="go('ajustes')"><div class="t">⚙️ Ajustes del equipo</div><span>›</span></div>`:''}
+    <div class="item" onclick="exportJSON()"><div class="t">⬇️ Exportar copia (JSON)</div><span>›</span></div>
+    <div class="item" onclick="logout()"><div class="t">🚪 Salir del equipo</div><span>›</span></div>
+  </div>
+  <p class="muted">Equipo ${esc(team.nombre)} · código <b>${esc(team.code)}</b> · los nuevos piden acceso con este código y el admin los aprueba en "Usuarios y permisos".</p>
+  <p class="muted">Conectado como ${esc(authUser?.email||'')} · AKT v1.1</p>`;
+}
+function exportJSON(){const blob=new Blob([JSON.stringify({team,...S},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`AKT-${today()}.json`;a.click();}
+function vCircuitos(){
+  return `<h2>Circuitos</h2>
+  <div class="card list">${S.circuitos.map(c=>`<div class="item"><div><div class="t">${esc(c.nombre)}</div><div class="s">${fmt0(c.longitud)} m · ref. ${c.pinonRef}/${c.coronaRef} (${fmt(c.coronaRef/c.pinonRef)})</div><div class="s">${esc(c.notas||'')}</div></div>${me.isAdmin||me.canEditAll?`<button class="btn sec sm" onclick="editCircuito('${c.id}')">Editar</button>`:''}</div>`).join('')}</div>
+  ${me.isAdmin||me.canEditAll?'<button class="btn sec" onclick="editCircuito(null)">+ Añadir circuito</button>':''}
+  <button class="btn sec" onclick="go('mas')">Volver</button>`;
+}
+async function editCircuito(id){
+  const c=id?S.circuitos.find(x=>x.id===id):{nombre:'',longitud:1000,pinonRef:11,coronaRef:78,notas:'',orden:S.circuitos.length};
+  const nombre=prompt('Nombre:',c.nombre);if(!nombre)return;
+  const longitud=num(prompt('Longitud (m):',c.longitud));const pinonRef=num(prompt('Piñón de referencia:',c.pinonRef));const coronaRef=num(prompt('Corona de referencia:',c.coronaRef));
+  const notas=prompt('Notas:',c.notas||'')??'';
+  const d={nombre,longitud,pinonRef,coronaRef,notas,orden:c.orden};
+  if(id)await col('circuitos').doc(id).set(d,{merge:true});else await col('circuitos').add(d);
+}
+function vKarts(){
+  return `<h2>Karts y pilotos</h2>
+  <div class="card list">${S.karts.map(k=>`<div class="item"><div><div class="t">${esc(k.nombre)}</div><div class="s">Piloto: ${esc(k.piloto||'—')} · Mecánico: ${esc(k.mecanico||'—')}</div><div class="s">Chasis CRG KT2 · ${esc(k.chasisSerie||'s/n')}</div></div>${canEdit(k.id)?`<button class="btn sec sm" onclick="editKart('${k.id}')">Editar</button>`:''}</div>`).join('')}</div>
+  <button class="btn sec" onclick="go('mas')">Volver</button>`;
+}
+async function editKart(id){
+  const k=S.karts.find(x=>x.id===id);
+  const nombre=prompt('Nombre del kart:',k.nombre);if(!nombre)return;
+  const piloto=prompt('Piloto:',k.piloto)??k.piloto;const mecanico=prompt('Mecánico:',k.mecanico)??k.mecanico;const chasisSerie=prompt('Nº serie chasis:',k.chasisSerie)??k.chasisSerie;
+  await col('karts').doc(id).set({nombre,piloto,mecanico,chasisSerie},{merge:true});
+}
+function vUsuarios(){
+  const kartOpts=sel=>`<option value="">—</option>${S.karts.map(k=>`<option value="${k.id}" ${sel===k.id?'selected':''}>${esc(k.nombre)}</option>`).join('')}`;
+  return `<h2>Usuarios y permisos</h2>
+  ${S_requests.length?`<h3 style="color:var(--acc)">Solicitudes pendientes (${S_requests.length})</h3>
+  ${S_requests.map(r=>`<div class="card acc"><b>${esc(r.nombre)}</b> <span class="muted">${esc(r.rol)} · ${esc(r.email)}</span>
+    <div class="row" style="margin-top:8px"><button class="btn sm" data-id="${r.id}" onclick="approveReq(this.dataset.id)">Aprobar</button><button class="btn danger sm" data-id="${r.id}" onclick="rejectReq(this.dataset.id)">Rechazar</button></div></div>`).join('')}`:''}
+  <h3>Miembros</h3>
+  ${S.users.map(u=>`<div class="card"><b>${esc(u.nombre)}</b> <span class="muted">${esc(u.rol)}${u.isAdmin?' · admin':''} · ${esc(u.email||'')}</span>
+    <label>Kart asignado</label><select data-id="${u.id}" onchange="setUserKart(this)">${kartOpts(u.kartId)}</select>
+    <div class="switch"><span>Puede editar todos los karts</span><input type="checkbox" ${u.canEditAll?'checked':''} data-id="${u.id}" data-f="canEditAll" onchange="setUserFlag(this)"></div>
+    ${u.id!==uid?`<div class="switch"><span>Administrador</span><input type="checkbox" ${u.isAdmin?'checked':''} data-id="${u.id}" data-f="isAdmin" onchange="setUserFlag(this)"></div><button class="btn danger sm" style="margin-top:8px" data-id="${u.id}" onclick="delUser(this.dataset.id)">Expulsar</button>`:''}
+  </div>`).join('')}
+  <button class="btn sec" onclick="go('mas')">Volver</button>`;
+}
+async function setUser(id,d){try{await col('users').doc(id).update(d);toast('Guardado');}catch(e){toast('Error: '+e.message);render();}}
+function setUserKart(el){setUser(el.dataset.id,{kartId:el.value||null});}
+function setUserFlag(el){const d={};d[el.dataset.f]=el.checked;setUser(el.dataset.id,d);}
+async function delUser(id){if(confirm('¿Expulsar usuario? Perderá el acceso inmediatamente.'))await col('users').doc(id).delete();}
+async function approveReq(id){
+  const r=S_requests.find(x=>x.id===id);if(!r)return;
+  await col('users').doc(id).set({nombre:r.nombre,rol:r.rol,email:r.email||'',kartId:null,canEditAll:false,isAdmin:false,createdAt:Date.now()});
+  await col('requests').doc(id).delete();toast(`${r.nombre} aprobado. Asígnale su kart.`);
+}
+async function rejectReq(id){if(confirm('¿Rechazar solicitud?'))await col('requests').doc(id).delete();}
+function vAjustes(){
+  const c=team.config||CONFIG_BASE;
+  return `<h2>Ajustes del equipo</h2><div class="card">
+    <label>Nombre del equipo</label><input id="a-nombre" value="${esc(team.nombre)}">
+    <div class="grid2">
+      <div><label>Intervalo pistón (h)</label><input id="a-piston" inputmode="decimal" value="${c.pistonH}"></div>
+      <div><label>Intervalo biela (h)</label><input id="a-biela" inputmode="decimal" value="${c.bielaH}"></div>
+      <div><label>RPM máx objetivo X30</label><input id="a-rpm" inputmode="numeric" value="${c.rpmObjetivo}"></div>
+      <div><label>Circunf. rueda trasera (m)</label><input id="a-circ" inputmode="decimal" value="${String(c.circunf).replace('.',',')}"></div>
+    </div>
+    <button class="btn" onclick="saveAjustes()">Guardar</button></div>
+  <button class="btn sec" onclick="go('mas')">Volver</button>`;
+}
+async function saveAjustes(){
+  await db.collection('teams').doc(teamId).update({nombre:$('#a-nombre').value,config:{pistonH:num($('#a-piston').value),bielaH:num($('#a-biela').value),rpmObjetivo:num($('#a-rpm').value),circunf:num($('#a-circ').value)}});
+  window._rel=null;toast('Ajustes guardados');go('mas');
+}
+</script>
+</body>
+</html>
