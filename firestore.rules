@@ -1,18 +1,15 @@
 rules_version = '2';
 // =====================================================================
-//  AKT · Reglas de Cloud Firestore
-//  Principios:
-//   - Nadie lee ni escribe nada sin cuenta de Google iniciada.
-//   - Solo los MIEMBROS aprobados de un equipo leen sus datos.
-//   - Los roles (admin, editar todos, editar mi kart) se comprueban AQUÍ,
-//     no en la app.
-//   - Un no miembro solo puede: crear un equipo nuevo (y ser su admin) o
-//     dejar una solicitud de acceso que el admin aprueba o rechaza.
+//  AKT v2.0 · Reglas de Cloud Firestore
+//  - Nadie lee ni escribe nada sin cuenta de Google iniciada.
+//  - Solo los MIEMBROS aprobados de un equipo leen sus datos.
+//  - Los roles (admin, editar todos, editar mi kart) se comprueban AQUÍ.
+//  - Un no miembro solo puede crear un equipo nuevo (y ser su admin)
+//    o dejar una solicitud de acceso.
 // =====================================================================
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ---------- funciones auxiliares ----------
     function signedIn() { return request.auth != null; }
     function teamDoc(t) { return /databases/$(database)/documents/teams/$(t); }
     function userDoc(t) { return /databases/$(database)/documents/teams/$(t)/users/$(request.auth.uid); }
@@ -23,37 +20,32 @@ service cloud.firestore {
     function canEditKart(t, k) { return member(t) && (editAll(t) || me(t).kartId == k); }
     function isStr(v)  { return v is string && v.size() <= 300; }
     function isNum(v)  { return v is number; }
-    function in_(d)    { return request.resource.data; }   // datos entrantes
+    function inc()     { return request.resource.data; }
 
-    // Bloqueo por defecto de todo lo que no esté listado abajo
+    // Bloqueo por defecto
     match /{document=**} { allow read, write: if false; }
 
     match /teams/{t} {
-      // El doc del equipo solo lo leen sus miembros. Nunca listar equipos.
       allow get:    if member(t);
       allow list:   if false;
-      // Crear equipo: cualquier usuario con sesión; queda como admin.
       allow create: if signedIn()
-                    && in_(0).adminUid == request.auth.uid
-                    && in_(0).code == t
-                    && isStr(in_(0).nombre)
-                    && in_(0).config is map;
-      // Solo el admin cambia nombre/config; nadie cambia el adminUid.
-      allow update: if admin(t) && in_(0).adminUid == resource.data.adminUid;
+                    && inc().adminUid == request.auth.uid
+                    && inc().code == t
+                    && isStr(inc().nombre)
+                    && inc().config is map;
+      allow update: if admin(t) && inc().adminUid == resource.data.adminUid;
       allow delete: if false;
 
-      // ---------- usuarios (miembros aprobados) ----------
+      // ---------- miembros ----------
       match /users/{uid} {
         allow get:    if signedIn() && (uid == request.auth.uid || admin(t));
         allow list:   if admin(t);
-        // Crear: el fundador se da de alta a sí mismo; después solo el admin aprueba.
         allow create: if signedIn()
                       && ((uid == request.auth.uid && get(teamDoc(t)).data.adminUid == request.auth.uid) || admin(t))
-                      && isStr(in_(0).nombre)
-                      && in_(0).isAdmin is bool
-                      && in_(0).canEditAll is bool;
-        // Editar permisos: solo admin, y no puede quitarse a sí mismo el rol de admin.
-        allow update: if admin(t) && !(uid == request.auth.uid && in_(0).isAdmin == false);
+                      && isStr(inc().nombre)
+                      && inc().isAdmin is bool
+                      && inc().canEditAll is bool;
+        allow update: if admin(t) && !(uid == request.auth.uid && inc().isAdmin == false);
         allow delete: if admin(t) && uid != request.auth.uid;
       }
 
@@ -62,17 +54,17 @@ service cloud.firestore {
         allow get:    if signedIn() && (uid == request.auth.uid || admin(t));
         allow list:   if admin(t);
         allow create: if signedIn() && uid == request.auth.uid
-                      && in_(0).uid == request.auth.uid
-                      && isStr(in_(0).nombre) && isStr(in_(0).rol);
+                      && inc().uid == request.auth.uid
+                      && isStr(inc().nombre) && isStr(inc().rol);
         allow update: if false;
         allow delete: if admin(t) || (signedIn() && uid == request.auth.uid);
       }
 
-      // ---------- karts ----------
+      // ---------- karts (incluye horas y mantenimiento de freno) ----------
       match /karts/{id} {
         allow read:   if member(t);
-        allow create: if admin(t) && isStr(in_(0).nombre);
-        allow update: if canEditKart(t, id) && isStr(in_(0).nombre);
+        allow create: if admin(t) && isStr(inc().nombre);
+        allow update: if canEditKart(t, id) && isStr(inc().nombre);
         allow delete: if false;
       }
 
@@ -80,41 +72,67 @@ service cloud.firestore {
       match /circuitos/{id} {
         allow read:   if member(t);
         allow create, update: if editAll(t)
-                      && isStr(in_(0).nombre) && isNum(in_(0).longitud)
-                      && isNum(in_(0).pinonRef) && isNum(in_(0).coronaRef);
+                      && isStr(inc().nombre) && isNum(inc().longitud)
+                      && isNum(inc().pinonRef) && isNum(inc().coronaRef);
         allow delete: if admin(t);
       }
 
-      // ---------- motores ----------
+      // ---------- motores (horas, intervalos, historial de cambios) ----------
       match /motores/{id} {
         allow read:   if member(t);
-        allow create: if canEditKart(t, in_(0).kartId)
-                      && isStr(in_(0).serie) && isStr(in_(0).apodo);
+        allow create: if canEditKart(t, inc().kartId)
+                      && isStr(inc().serie) && isStr(inc().apodo)
+                      && isNum(inc().horas);
         allow update: if canEditKart(t, resource.data.kartId)
-                      && in_(0).kartId == resource.data.kartId;
+                      && inc().kartId == resource.data.kartId
+                      && isNum(inc().horas);
+        allow delete: if admin(t);
+      }
+
+      // ---------- carburadores (de un kart o del equipo) ----------
+      match /carburadores/{id} {
+        allow read:   if member(t);
+        allow create, update: if isStr(inc().numero)
+                      && ((inc().kartId is string && inc().kartId != '' && canEditKart(t, inc().kartId)) || editAll(t));
         allow delete: if admin(t);
       }
 
       // ---------- sesiones ----------
       match /sesiones/{id} {
         allow read:   if member(t);
-        allow create: if canEditKart(t, in_(0).kartId)
-                      && in_(0).createdBy == request.auth.uid
-                      && isStr(in_(0).fecha) && isStr(in_(0).circuitoId)
-                      && in_(0).trans is map && in_(0).setup is map && in_(0).carb is map;
+        allow create: if canEditKart(t, inc().kartId)
+                      && inc().createdBy == request.auth.uid
+                      && isStr(inc().fecha) && isStr(inc().circuitoId)
+                      && inc().trans is map && inc().setup is map && inc().carb is map;
         allow update: if canEditKart(t, resource.data.kartId)
-                      && in_(0).kartId == resource.data.kartId;
+                      && inc().kartId == resource.data.kartId
+                      && inc().createdBy == resource.data.createdBy;
         allow delete: if canEditKart(t, resource.data.kartId);
       }
 
       // ---------- setups guardados ----------
       match /setups/{id} {
         allow read:   if member(t);
-        allow create: if canEditKart(t, in_(0).kartId)
-                      && in_(0).createdBy == request.auth.uid
-                      && isStr(in_(0).nombre) && in_(0).setup is map;
+        allow create: if canEditKart(t, inc().kartId)
+                      && inc().createdBy == request.auth.uid
+                      && isStr(inc().nombre) && inc().setup is map;
         allow update: if canEditKart(t, resource.data.kartId);
         allow delete: if canEditKart(t, resource.data.kartId);
+      }
+
+      // ---------- calendario de carreras ----------
+      match /calendario/{id} {
+        allow read:   if member(t);
+        allow create, update: if editAll(t) && isStr(inc().campeonato) && isStr(inc().fecha);
+        allow delete: if editAll(t);
+      }
+
+      // ---------- vídeos y enlaces de referencia ----------
+      match /enlaces/{id} {
+        allow read:   if member(t);
+        allow create, update: if editAll(t) && isStr(inc().titulo) && isStr(inc().url)
+                      && inc().url.matches('https?://.*');
+        allow delete: if editAll(t);
       }
     }
   }

@@ -1,18 +1,42 @@
-# AKT · App de setup para el equipo (v1.1)
+# AKT · App de setup para el equipo (v2.0)
 
-PWA para Android · CRG KT2 + Iame X30 · 3 parejas piloto/mecánico · sincronización en tiempo real con Firebase · acceso restringido a miembros aprobados.
+PWA para Android · CRG KT2 + Iame X30 · sincronización en tiempo real con Firebase · acceso restringido a miembros aprobados.
 
 ## Archivos (súbelos todos a GitHub)
 
-| Archivo | Qué es | Cambia en v1.1 |
+| Archivo | Qué es | Cambia en v2.0 |
 |---|---|---|
-| `index.html` | La app completa (HTML + estilos + lógica) | Sí: login con Google, solicitud/aprobación de acceso |
-| `firebase-config.js` | Datos de tu proyecto Firebase (rellenar) | No |
-| `firestore.rules` | Reglas de seguridad (pegar en la consola, no las usa la web) | Sí: reescritas |
-| `manifest.json` | Hace que Android la instale como app | No |
-| `sw.js` | Caché para funcionar sin cobertura | Sí (versión de caché) |
-| `icon-192.png`, `icon-512.png` | Iconos | No |
+| `index.html` | La app completa | **Sí** (reconstruida) |
+| `akt-draw.js` | Esquemas dinámicos y hoja de setup | **Nuevo** |
+| `firestore.rules` | Reglas de seguridad (pegar en la consola de Firebase) | **Sí** |
+| `sw.js` | Caché para funcionar sin cobertura | **Sí** |
 | `README.md` | Esta guía | Sí |
+| `firebase-config.js` | Datos de tu proyecto Firebase | No (ya rellenado) |
+| `manifest.json`, `icon-192.png`, `icon-512.png` | Instalación como app | No |
+
+### Para actualizar desde la v1.1
+1. GitHub → repositorio → **Add file → Upload files** → arrastra `index.html`, `akt-draw.js`, `firestore.rules`, `sw.js` y `README.md` → **Commit changes**.
+2. Firebase → **Firestore Database → Reglas** → borra todo → pega el `firestore.rules` nuevo → **Publicar**. Sin este paso, carburadores, calendario y vídeos darán "sin permiso".
+3. En el móvil, cierra la app y vuelve a abrirla (dos veces si no ves "AKT v2.0" en Más).
+
+## Novedades de la v2.0
+- **Inicio**: arranca con el kart asignado a tu cuenta; selector de kart; sesiones ordenables por fecha o agrupadas por circuito (para comparar años) y filtro entreno/carrera; próxima carrera con cuenta atrás; alertas de motor y freno del kart.
+- **Sesión por pestañas**: Datos · Chasis · Relación · Carburación · Neumáticos · Resultado. Una sesión nueva copia el setup de la última de ese kart. Se ve quién la creó y quién la editó.
+- **Chasis** con los campos reales del KT2 y esquemas que se redibujan al cambiar los valores (tocar para ampliar): soporte caster (puntos), camber y convergencia en mm (Sniper), arandelas arriba/abajo, espaciadores, mangueta A/B/C/D, pletina 25/31 y agujeros, altura trasera y batalla ±5 mm, eje Ø50 de la lista CRG, llantas, asiento con cotas D1–D4.
+- **Relación**: calculadora dentro de la sesión con las RPM de telemetría.
+- **Carburación**: carburadores numerados (Más → Carburadores) y se elige cuál lleva cada sesión.
+- **Neumáticos**: presiones en frío (al salir) y en caliente (al entrar) en las 4 ruedas, con salto automático entre ruedas, subida de presión y desviación respecto al objetivo.
+- **Hoja de setup**: el KT2 a escala con todos los valores; se guarda o comparte como imagen.
+- **Motores**: cuentahoras no reseteable (las horas se calculan por diferencia de lecturas), intervalos de pistón y biela por motor, historial de cambios con diámetro del pistón (lista IAME 54,00–54,27), selección, juego, proveedor y nota.
+- **Freno**: horas por kart y alertas de líquido (15 h) y juntas (25 h) según CRG.
+- **Calendario** de campeonatos y **Referencia** con esquemas, ayudas CRG y vídeos (añadibles).
+- **Karts**: el admin puede añadir más karts.
+
+## Primera configuración tras actualizar
+1. **Motores** → en cada motor, **Editar**: marca "Tiene cuentahoras" en los que lo llevan y pon la lectura actual (Z0259: 34,3 h), las horas desde el último cambio de pistón y biela y, si quieres, intervalos propios (motor de carrera / entreno).
+2. **Más → Carburadores** → añade C1, C2…
+3. **Calendario** → añade las carreras de la temporada.
+4. **Más → Karts** → horas actuales del kart para el freno, si las sabéis.
 
 ## Modelo de seguridad
 
