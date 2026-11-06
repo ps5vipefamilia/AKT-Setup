@@ -1,5 +1,5 @@
 // AKT service worker · caché del shell de la app (Firestore gestiona su propio offline)
-const CACHE = 'akt-v8';
+const CACHE = 'akt-v9';
 const SHELL = ['./', './index.html', './manifest.json', './firebase-config.js', './akt-draw.js', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
