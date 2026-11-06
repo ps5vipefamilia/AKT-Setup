@@ -104,13 +104,18 @@ tr.best td{color:var(--acc2);font-weight:700}
 </head>
 <body>
 
-<!-- ============ LOGIN (paso 1: cuenta de Google) ============ -->
+<!-- ============ LOGIN (paso 1: correo y contraseña) ============ -->
 <div id="login" class="login hidden">
   <div class="logo">AKT</div>
   <div class="tag">Setup · CRG KT2 · Iame X30</div>
   <div class="card">
-    <p class="muted">Acceso solo para miembros del equipo. Inicia sesión con tu cuenta de Google.</p>
-    <button class="btn" onclick="signInGoogle()">Entrar con Google</button>
+    <p class="muted" id="l-intro">Acceso solo para miembros del equipo.</p>
+    <label>Usuario</label><input id="l-email" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="p. ej. marc">
+    <label>Contraseña</label><input id="l-pass" type="password" autocomplete="current-password">
+    <div id="l-pass2-w" class="hidden"><label>Repite la contraseña</label><input id="l-pass2" type="password" autocomplete="new-password"></div>
+    <button class="btn" id="l-go" onclick="loginGo()">Entrar</button>
+    <button class="btn sec" id="l-toggle" onclick="toggleRegistro()">Crear cuenta nueva</button>
+    <p class="muted" style="text-align:center;margin:14px 0 0">¿Has olvidado la contraseña? Pide al administrador que restablezca tu usuario.</p>
   </div>
   <p id="l-msg" class="muted"></p>
 </div>
@@ -179,7 +184,7 @@ tr.best td{color:var(--acc2);font-weight:700}
 /* =========================================================
    AKT v2.0 · DATOS BASE (conocimiento común precargado)
    ========================================================= */
-const APP_VERSION = '2.0';
+const APP_VERSION = '2.3';
 const CIRCUITOS_BASE = [
   {id:'chiva',   nombre:'Chiva · Kartódromo Lucas Guerrero', longitud:1428, pinonRef:11, coronaRef:76, notas:'Trazado rápido con zona técnica. Relación orientativa X30 Senior; ajustar con RPM máx. en recta principal.'},
   {id:'zuera',   nombre:'Zuera · Circuito Internacional',     longitud:1700, pinonRef:11, coronaRef:73, notas:'Circuito más largo (1.700 m), muy rápido, rebufo importante. Relación corta penaliza en recta.'},
@@ -219,7 +224,7 @@ const F_DATOS_COND=[
   ['pista','Pista','sel',['Seca','Húmeda','Mojada','Secándose']],['goma','Goma en pista','sel',['Poca','Media','Mucha']]
 ];
 const F_CHASIS={
-  'Soporte caster':[['caster','Caster (puntos, neutro 0)','sel',HALVES(-10,10).filter(x=>Number.isInteger(x)).map(String)],
+  'Soporte caster':[['caster','Caster (puntos, neutro 0)','sel',HALVES(-5,5).filter(x=>Number.isInteger(x)).map(String)],
     ['camberI','Camber izq. (mm Sniper)','num'],['camberD','Camber der. (mm Sniper)','num']],
   'Convergencia':[['convI','Convergencia izq. (mm, abierto +)','num'],['convD','Convergencia der. (mm, abierto +)','num']],
   'Altura delantera':[['altArriba','Arandelas arriba','sel',HALVES(0,5).map(String)],['altAbajo','Arandelas abajo','sel',HALVES(0,5).map(String)]],
@@ -286,24 +291,53 @@ window.addEventListener('load',async()=>{
   window.addEventListener('offline',()=>$('#sync').classList.add('off'));
   if(!navigator.onLine)$('#sync').classList.add('off');
   if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
-  try{await auth.getRedirectResult();}catch(e){$('#l-msg').textContent='Error de acceso: '+e.message;}
   auth.onAuthStateChanged(async u=>{
     if(!u){showScreen('login');return;}
     uid=u.uid; authUser=u;
-    const saved=localStorage.getItem('akt_team');
+    let saved=localStorage.getItem('akt_team');
+    const remoto=await teamDeCuenta();
+    if(remoto&&remoto!==saved){saved=remoto;localStorage.setItem('akt_team',remoto);}
     if(saved)watchMembership(saved);else showJoin();
   });
 });
 function showScreen(id){['login','join','pending','app'].forEach(s=>$('#'+s).classList.toggle('hidden',s!==id));}
-async function signInGoogle(){
-  const p=new firebase.auth.GoogleAuthProvider();
-  try{await auth.signInWithPopup(p);}
-  catch(e){ if(['auth/popup-blocked','auth/popup-closed-by-user','auth/operation-not-supported-in-this-environment'].includes(e.code)){await auth.signInWithRedirect(p);} else {$('#l-msg').textContent='Error: '+e.message;} }
+let registro=false;
+const USER_DOMAIN='akt.local';
+const normUser=u=>String(u||'').trim().toLowerCase();
+const userToEmail=u=>`${normUser(u)}@${USER_DOMAIN}`;
+const emailToUser=e=>String(e||'').replace('@'+USER_DOMAIN,'');
+const AUTH_ERR={'auth/invalid-email':'Usuario no válido.','auth/missing-password':'Falta la contraseña.','auth/weak-password':'La contraseña debe tener al menos 6 caracteres.',
+  'auth/email-already-in-use':'Ese nombre de usuario ya existe: elige otro o usa "Entrar".','auth/invalid-credential':'Usuario o contraseña incorrectos.','auth/wrong-password':'Usuario o contraseña incorrectos.',
+  'auth/user-not-found':'Ese usuario no existe: usa "Crear cuenta nueva".','auth/too-many-requests':'Demasiados intentos. Espera unos minutos.',
+  'auth/network-request-failed':'Sin conexión. Inténtalo con cobertura.','auth/operation-not-allowed':'El acceso con usuario no está activado en Firebase (Authentication → Método de acceso → Correo electrónico/contraseña).'};
+const authMsg=e=>AUTH_ERR[e.code]||('Error: '+e.message);
+function toggleRegistro(){
+  registro=!registro;$('#l-pass2-w').classList.toggle('hidden',!registro);
+  $('#l-go').textContent=registro?'Crear cuenta':'Entrar';$('#l-toggle').textContent=registro?'Ya tengo cuenta':'Crear cuenta nueva';
+  $('#l-pass').autocomplete=registro?'new-password':'current-password';
+  $('#l-intro').textContent=registro?'Elige un nombre de usuario (letras, números, punto o guion) y una contraseña de 6 caracteres como mínimo. Después pedirás acceso al equipo.':'Acceso solo para miembros del equipo.';
+  $('#l-msg').textContent='';
 }
-async function signOutAll(){localStorage.removeItem('akt_team');if(memberSub)memberSub();subs.forEach(u=>u());await auth.signOut();location.reload();}
+async function loginGo(){
+  const user=normUser($('#l-email').value),pass=$('#l-pass').value;
+  if(!user||!pass){$('#l-msg').textContent='Escribe usuario y contraseña.';return;}
+  if(!/^[a-z0-9._-]{3,20}$/.test(user)){$('#l-msg').textContent='El usuario debe tener entre 3 y 20 caracteres: letras sin acentos, números, punto, guion o guion bajo. Sin espacios.';return;}
+  $('#l-go').disabled=true;$('#l-msg').textContent='';
+  try{
+    if(registro){
+      if(pass!==$('#l-pass2').value){$('#l-msg').textContent='Las contraseñas no coinciden.';return;}
+      await auth.createUserWithEmailAndPassword(userToEmail(user),pass);
+    }else await auth.signInWithEmailAndPassword(userToEmail(user),pass);
+  }catch(e){$('#l-msg').textContent=authMsg(e);}
+  finally{$('#l-go').disabled=false;}
+}
+/* equipo de la cuenta, guardado en la base de datos para entrar desde cualquier dispositivo */
+async function linkCuenta(code){try{await db.collection('cuentas').doc(uid).set({teamId:code,usuario:emailToUser(authUser.email),ts:Date.now()});}catch(e){console.warn('cuenta',e.message);}}
+async function teamDeCuenta(){try{const d=await db.collection('cuentas').doc(uid).get();return d.exists?d.data().teamId:null;}catch(e){return null;}}
+async function signOutAll(){if(memberSub)memberSub();subs.forEach(u=>u());await auth.signOut();location.reload();}
 function showJoin(){
-  $('#j-who').textContent=`Conectado como ${authUser.email||authUser.displayName||''}`;
-  if(!$('#j-nombre').value)$('#j-nombre').value=(authUser.displayName||'').split(' ')[0];
+  $('#j-who').textContent=`Usuario: ${emailToUser(authUser.email)}`;
+  if(!$('#j-nombre').value){const n=emailToUser(authUser.email).split(/[._-]/)[0];$('#j-nombre').value=n.charAt(0).toUpperCase()+n.slice(1);}
   $('#j-code').value=localStorage.getItem('akt_team')||'';
   showScreen('join');
 }
@@ -317,24 +351,25 @@ async function createTeam(){
   const ref=db.collection('teams').doc(j.code);
   try{await ref.set({nombre:'AKT',code:j.code,adminUid:uid,createdAt:Date.now(),config:CONFIG_BASE});}
   catch(e){$('#j-msg').textContent=`No se ha podido crear "${j.code}": probablemente ya existe. Usa "Solicitar acceso".`;return;}
-  await ref.collection('users').doc(uid).set({nombre:j.nombre,rol:j.rol,email:authUser.email||'',kartId:'kart1',canEditAll:true,isAdmin:true,createdAt:Date.now()});
+  await ref.collection('users').doc(uid).set({nombre:j.nombre,rol:j.rol,usuario:emailToUser(authUser.email),email:authUser.email||'',kartId:'kart1',canEditAll:true,isAdmin:true,createdAt:Date.now()});
   const b=db.batch();
   CIRCUITOS_BASE.forEach((c,i)=>b.set(ref.collection('circuitos').doc(c.id),{...c,orden:i}));
   ['Kart 1','Kart 2','Kart 3'].forEach((n,i)=>b.set(ref.collection('karts').doc('kart'+(i+1)),{nombre:n,piloto:'',mecanico:'',chasisSerie:'',orden:i,horas:0,frenoLiqAt:0,frenoJuntasAt:0}));
   await b.commit();
-  localStorage.setItem('akt_team',j.code);
+  localStorage.setItem('akt_team',j.code);await linkCuenta(j.code);
   watchMembership(j.code);
 }
 async function requestAccess(){
   const j=readJoin();if(!j)return;
-  try{await db.collection('teams').doc(j.code).collection('requests').doc(uid).set({uid,nombre:j.nombre,rol:j.rol,email:authUser.email||'',createdAt:Date.now()});}
+  try{await db.collection('teams').doc(j.code).collection('requests').doc(uid).set({uid,nombre:j.nombre,rol:j.rol,usuario:emailToUser(authUser.email),email:authUser.email||'',createdAt:Date.now()});}
   catch(e){$('#j-msg').textContent='Error: '+e.message;return;}
-  localStorage.setItem('akt_team',j.code);
+  localStorage.setItem('akt_team',j.code);await linkCuenta(j.code);
   watchMembership(j.code);
 }
 async function cancelRequest(){
   const code=localStorage.getItem('akt_team');
   if(code){try{await db.collection('teams').doc(code).collection('requests').doc(uid).delete();}catch(e){}}
+  try{await db.collection('cuentas').doc(uid).delete();}catch(e){}
   localStorage.removeItem('akt_team');if(memberSub)memberSub();showJoin();
 }
 function watchMembership(code){
@@ -891,7 +926,7 @@ function vMas(){
     <div class="item" onclick="signOutAll()"><div class="t">🚪 Cerrar sesión</div><span>›</span></div>
   </div>
   <p class="muted">Equipo ${esc(team.nombre)} · código <b>${esc(team.code)}</b> · los nuevos piden acceso con este código y el admin los aprueba.</p>
-  <p class="muted">Conectado como ${esc(authUser?.email||'')} · AKT v${APP_VERSION}</p>`;
+  <p class="muted">Usuario ${esc(emailToUser(authUser?.email))} · AKT v${APP_VERSION}</p>`;
 }
 function exportJSON(){const blob=new Blob([JSON.stringify({team,...S},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`AKT-${today()}.json`;a.click();}
 const back='<button class="btn sec" onclick="go(\'mas\')">Volver</button>';
@@ -978,21 +1013,22 @@ function vUsuarios(){
   const kartOpts=sel=>`<option value="">— sin kart (solo lectura)</option>${S.karts.map(k=>`<option value="${k.id}" ${sel===k.id?'selected':''}>${esc(k.nombre)}</option>`).join('')}`;
   return `<h2>Usuarios y permisos</h2>
   ${REQ.length?`<h3 style="color:var(--acc)">Solicitudes pendientes (${REQ.length})</h3>
-  ${REQ.map(r=>`<div class="card acc"><b>${esc(r.nombre)}</b> <span class="muted">${esc(r.rol)} · ${esc(r.email)}</span>
+  ${REQ.map(r=>`<div class="card acc"><b>${esc(r.nombre)}</b> <span class="muted">${esc(r.rol)} · usuario <b>${esc(r.usuario||emailToUser(r.email))}</b></span>
     <div class="row" style="margin-top:8px"><button class="btn sm" data-id="${r.id}" onclick="approveReq(this.dataset.id)">Aprobar</button><button class="btn danger sm" data-id="${r.id}" onclick="rejectReq(this.dataset.id)">Rechazar</button></div></div>`).join('')}`:''}
   <h3>Miembros</h3>
-  ${S.users.map(u=>`<div class="card"><b>${esc(u.nombre)}</b> <span class="muted">${esc(u.rol)}${u.isAdmin?' · admin':''} · ${esc(u.email||'')}</span>
+  ${S.users.map(u=>`<div class="card"><b>${esc(u.nombre)}</b> <span class="muted">${esc(u.rol)}${u.isAdmin?' · admin':''} · usuario <b>${esc(u.usuario||emailToUser(u.email))}</b></span>
     <label>Kart asignado (arranca con este kart)</label><select data-id="${u.id}" onchange="setUserKart(this)">${kartOpts(u.kartId)}</select>
     <div class="switch"><span>Puede editar todos los karts</span><input type="checkbox" ${u.canEditAll?'checked':''} data-id="${u.id}" data-f="canEditAll" onchange="setUserFlag(this)"></div>
     ${u.id!==uid?`<div class="switch"><span>Administrador</span><input type="checkbox" ${u.isAdmin?'checked':''} data-id="${u.id}" data-f="isAdmin" onchange="setUserFlag(this)"></div><button class="btn danger sm" style="margin-top:8px" data-id="${u.id}" onclick="delUser(this.dataset.id)">Expulsar</button>`:''}
-  </div>`).join('')}${back}`;
+  </div>`).join('')}
+  <div class="help"><b>Si alguien olvida su contraseña:</b> Firebase → Authentication → Usuarios → busca <i>usuario@${USER_DOMAIN}</i> → ⋮ → Eliminar cuenta. Después expúlsalo aquí, que vuelva a crear la cuenta con el mismo usuario y apruébalo de nuevo. Sus sesiones no se pierden: están ligadas al kart.</div>${back}`;
 }
 async function setUser(id,d){try{await col('users').doc(id).update(d);toast('Guardado');}catch(e){toast('Error: '+e.message);}}
 function setUserKart(el){setUser(el.dataset.id,{kartId:el.value||null});}
 function setUserFlag(el){const d={};d[el.dataset.f]=el.checked;setUser(el.dataset.id,d);}
 async function delUser(id){if(confirm('¿Expulsar usuario? Perderá el acceso inmediatamente.'))await col('users').doc(id).delete();}
 async function approveReq(id){const r=REQ.find(x=>x.id===id);if(!r)return;
-  await col('users').doc(id).set({nombre:r.nombre,rol:r.rol,email:r.email||'',kartId:null,canEditAll:false,isAdmin:false,createdAt:Date.now()});
+  await col('users').doc(id).set({nombre:r.nombre,rol:r.rol,usuario:r.usuario||emailToUser(r.email),email:r.email||'',kartId:null,canEditAll:false,isAdmin:false,createdAt:Date.now()});
   await col('requests').doc(id).delete();toast(`${r.nombre} aprobado. Asígnale su kart.`);}
 async function rejectReq(id){if(confirm('¿Rechazar solicitud?'))await col('requests').doc(id).delete();}
 

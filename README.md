@@ -1,23 +1,31 @@
-# AKT · App de setup para el equipo (v2.0)
+# AKT · App de setup para el equipo (v2.2)
 
 PWA para Android · CRG KT2 + Iame X30 · sincronización en tiempo real con Firebase · acceso restringido a miembros aprobados.
 
 ## Archivos (súbelos todos a GitHub)
 
-| Archivo | Qué es | Cambia en v2.0 |
+| Archivo | Qué es | Cambia en v2.2 |
 |---|---|---|
-| `index.html` | La app completa | **Sí** (reconstruida) |
-| `akt-draw.js` | Esquemas dinámicos y hoja de setup | **Nuevo** |
-| `firestore.rules` | Reglas de seguridad (pegar en la consola de Firebase) | **Sí** |
+| `index.html` | La app completa | **Sí** (acceso con usuario y contraseña) |
+| `akt-draw.js` | Esquemas dinámicos y hoja de setup | Nuevo en v2.0 |
+| `firestore.rules` | Reglas de seguridad (pegar en la consola de Firebase) | **Sí** (colección `cuentas`) |
 | `sw.js` | Caché para funcionar sin cobertura | **Sí** |
 | `README.md` | Esta guía | Sí |
 | `firebase-config.js` | Datos de tu proyecto Firebase | No (ya rellenado) |
 | `manifest.json`, `icon-192.png`, `icon-512.png` | Instalación como app | No |
 
+### Acceso con usuario y contraseña (v2.2)
+Firebase → **Authentication → Método de acceso** → **Agregar proveedor nuevo** → **Correo electrónico/contraseña** → activa solo el primer interruptor → **Guardar**. (Firebase lo llama "correo", pero la app usa nombres de usuario: por dentro los guarda como `usuario@akt.local`.)
+
+- Cada persona pulsa **Crear cuenta nueva**, elige un usuario (3–20 caracteres: letras sin acentos, números, punto o guion) y una contraseña de 6 caracteres como mínimo, pide acceso con el código del equipo y el administrador la aprueba.
+- Las credenciales las guarda Firebase Authentication en sus servidores (cifradas): se puede entrar con el mismo usuario desde cualquier móvil, tablet o PC. La app guarda además en la base de datos a qué equipo pertenece cada cuenta, así que en un dispositivo nuevo basta con usuario y contraseña.
+- **Contraseña olvidada**: Firebase → Authentication → Usuarios → busca `usuario@akt.local` → ⋮ → Eliminar cuenta. Expúlsalo en la app, que vuelva a crear la cuenta con el mismo usuario y apruébalo. Sus sesiones no se pierden.
+- **Equipo creado antes con Google**: Firestore → Datos → ⋮ junto a `teams` → Eliminar colección (borra todo, sin vuelta atrás) y vuelve a crear el equipo con tu usuario nuevo.
+
 ### Para actualizar desde la v1.1
 1. GitHub → repositorio → **Add file → Upload files** → arrastra `index.html`, `akt-draw.js`, `firestore.rules`, `sw.js` y `README.md` → **Commit changes**.
 2. Firebase → **Firestore Database → Reglas** → borra todo → pega el `firestore.rules` nuevo → **Publicar**. Sin este paso, carburadores, calendario y vídeos darán "sin permiso".
-3. En el móvil, cierra la app y vuelve a abrirla (dos veces si no ves "AKT v2.0" en Más).
+3. En el móvil, cierra la app y vuelve a abrirla (dos veces si no ves "AKT v2.2" en Más).
 
 ## Novedades de la v2.0
 - **Inicio**: arranca con el kart asignado a tu cuenta; selector de kart; sesiones ordenables por fecha o agrupadas por circuito (para comparar años) y filtro entreno/carrera; próxima carrera con cuenta atrás; alertas de motor y freno del kart.
@@ -40,12 +48,12 @@ PWA para Android · CRG KT2 + Iame X30 · sincronización en tiempo real con Fir
 
 ## Modelo de seguridad
 
-- **Nadie accede sin cuenta de Google.** No hay acceso anónimo.
+- **Nadie accede sin cuenta (usuario y contraseña).** No hay acceso anónimo. Las contraseñas las guarda Firebase Authentication cifradas; la app nunca las ve ni las almacena.
 - **Iniciar sesión no da acceso a nada.** Los datos solo los leen y escriben los usuarios que el administrador ha aprobado. El código de equipo solo sirve para dirigir la solicitud al equipo correcto.
 - **Los permisos se comprueban en las reglas de Firestore**, no en la app: admin (todo), "editar todos los karts", o editar solo el kart asignado. Aunque alguien modificara la web, la base de datos rechaza lo que no le corresponde.
 - **El admin aprueba y expulsa** desde Más → Usuarios y permisos. Al expulsar, la persona pierde el acceso al instante.
 - **La configuración web de Firebase es pública por diseño** (va en `firebase-config.js`, visible en el repositorio). No es un secreto: sin pasar login y reglas no sirve para nada. Aun así, se restringe la API key al dominio de la app (paso D).
-- **No hay contraseñas, PINs ni datos sensibles** almacenados.
+- **No hay contraseñas, PINs ni datos sensibles** en la base de datos.
 - **Riesgo aceptado (no resuelto):** no se ha activado Firebase App Check. Con cuentas reales y reglas por miembro, su aportación aquí es marginal (protege contra abuso de cuota desde scripts). Se puede añadir más adelante.
 
 ## Puesta en marcha
@@ -56,11 +64,10 @@ PWA para Android · CRG KT2 + Iame X30 · sincronización en tiempo real con Fir
 1. https://console.firebase.google.com → **Crear un proyecto** → nombre `akt-karting` → Continuar.
 2. Google Analytics: desactivar → **Crear proyecto** → Continuar.
 
-**A2. Activar el acceso con Google**
-1. Menú izquierdo → **Compilación → Authentication → Comenzar**.
-2. Pestaña **Sign-in method** → **Google** → interruptor **Habilitar**.
-3. Nombre público del proyecto: `AKT` · Correo de asistencia: el tuyo → **Guardar**.
-4. **No** actives "Anónimo".
+**A2. Activar el acceso con usuario y contraseña**
+1. Menú izquierdo → **Authentication** → **Comenzar**.
+2. Pestaña **Método de acceso** → **Correo electrónico/contraseña** → activa el primer interruptor (no el de "vínculo de correo") → **Guardar**.
+3. **No** actives "Anónimo".
 
 **A3. Crear la base de datos**
 1. **Compilación → Firestore Database → Crear base de datos**.
@@ -99,7 +106,7 @@ Si GitHub te avisa de "secret detected" por la API key: es la config pública de
 
 1. Chrome → `https://TU-USUARIO.github.io/akt-app/`.
 2. Menú ⋮ → **Añadir a pantalla de inicio** / **Instalar aplicación**.
-3. Abrir AKT → **Entrar con Google** → elegir cuenta.
+3. Abrir AKT → **Crear cuenta nueva** → usuario y contraseña (mínimo 6 caracteres). Las siguientes veces, **Entrar**.
 4. **Tú primero**: nombre, rol, código (p. ej. `AKT`) → **Crear equipo nuevo con este código**. Quedas como admin.
 5. **Los demás**: mismo código → **Solicitar acceso**. Ven "Solicitud enviada" hasta que apruebes.
 6. **Tú**: en Inicio aparece el aviso de solicitudes → Aprobar → asignar kart a cada uno.
@@ -119,8 +126,8 @@ GitHub → repositorio → **Add file → Upload files** → arrastrar solo los 
 | Síntoma | Causa probable |
 |---|---|
 | "Falta configurar firebase-config.js" | Valores de ejemplo sin sustituir, o archivo guardado como `.txt` |
-| `auth/unauthorized-domain` al entrar con Google | Falta el dominio en Authorized domains (B5) |
-| `auth/operation-not-allowed` | Proveedor Google no habilitado (A2) |
+| "Usuario o contraseña incorrectos" | La contraseña distingue mayúsculas; si la ha olvidado, ver "Contraseña olvidada" |
+| "El acceso con usuario no está activado en Firebase" | Falta activar Correo electrónico/contraseña (A2) |
 | `permission-denied` / "Sin permiso" | Reglas no publicadas (A4), o el usuario no está aprobado / sin kart asignado |
 | No se puede crear equipo: "probablemente ya existe" | Ese código ya está en uso: pide acceso o usa otro código |
 | Entra pero no ve datos | Está aprobado pero las reglas antiguas siguen publicadas: repetir A4 |

@@ -17,140 +17,211 @@
   /* ---------- 1. SOPORTE CASTER (KF) · caster en puntos, camber en grados ---------- */
   function soporteCaster({ caster = 0, camber = 0 } = {}) {
     const W = 900, H = 540;
-    const cas = Math.max(-10, Math.min(10, Math.round(caster || 0)));
+    const cas = Math.max(-5, Math.min(5, Math.round(caster || 0)));
     const cam = Number(camber || 0);
-    const cx = 250, cy = 275, R = 135;
-    const dyTooth = 9;                                   // px por diente
-    const slY = cy + cas * dyTooth;                       // caster + → corredera hacia ATRÁS (abajo en el dibujo)
-    const slX = cx + Math.max(-4, Math.min(4, cam)) * 7; // camber − → corredera hacia el chasis (izquierda)
+    const cx = 250, cy = 275, R = 150;
+    const pt = 6;                                         // px por punto de caster (ranura)
+    const swx = 78, swy = 100;                             // semiancho / semialto de la corredera
+    const rx = 92, ry = 136;                              // semiancho / semialto del rebaje ranurado
+    const slY = cy + cas * pt;                            // caster + → corredera hacia ATRÁS (abajo en el dibujo)
+    const slX = cx + Math.max(-4, Math.min(4, cam)) * 3;  // camber − → corredera hacia el chasis (izquierda)
     let s = svgOpen(W, H, 'Soporte caster (KF) · vista desde arriba');
     s += `<defs>
-      <radialGradient id="akt-disc" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#7d7466"/><stop offset="1" stop-color="#3f3a33"/></radialGradient>
-      <linearGradient id="akt-bolt" x1="0" x2="1"><stop offset="0" stop-color="#d9d9d9"/><stop offset=".5" stop-color="#8a8a8a"/><stop offset="1" stop-color="#4d4d4d"/></linearGradient>
-      <linearGradient id="akt-slider" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8f8a7f"/><stop offset="1" stop-color="#5c574e"/></linearGradient>
-      <linearGradient id="akt-screw" x1="0" x2="1"><stop offset="0" stop-color="#bfc4cc"/><stop offset="1" stop-color="#5a5f69"/></linearGradient>
+      <radialGradient id="akt-disc" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#4a4d53"/><stop offset="1" stop-color="#232528"/></radialGradient>
+      <linearGradient id="akt-block" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5d6168"/><stop offset="1" stop-color="#33363b"/></linearGradient>
+      <linearGradient id="akt-alu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e3e6ea"/><stop offset=".55" stop-color="#b4b9c0"/><stop offset="1" stop-color="#8a9098"/></linearGradient>
+      <radialGradient id="akt-nut" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#f2f4f6"/><stop offset="1" stop-color="#a3a9b1"/></radialGradient>
+      <radialGradient id="akt-pin" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#3b3e43"/><stop offset="1" stop-color="#0c0d0f"/></radialGradient>
+      <linearGradient id="akt-grub" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a4a4a"/><stop offset=".5" stop-color="#121212"/><stop offset="1" stop-color="#2e2e2e"/></linearGradient>
+      <clipPath id="akt-clipdisc"><circle cx="${cx}" cy="${cy}" r="${R - 14}"/></clipPath>
     </defs>`;
     // sentido de marcha y orientación
-    s += `<line x1="${cx}" y1="92" x2="${cx}" y2="60" stroke="${C.fg2}" stroke-width="2" marker-end="url(#akt-arr)"/>` + T(cx, 54, 'delante del kart');
-    s += T(70, 120, 'chasis', { anchor: 'end' }) + T(430, 120, 'fuera', { anchor: 'start' });
-    // horquilla (brazo superior) con alojamiento
-    s += `<rect x="90" y="105" width="320" height="340" rx="22" fill="${C.metal}" stroke="${C.line}" stroke-width="3"/>`;
-    // disco del soporte caster: canto + cara superior con ranuras paralelas (como la pieza KF)
-    s += `<circle cx="${cx}" cy="${cy + 6}" r="${R}" fill="#2a2620"/>`;
-    s += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#akt-disc)" stroke="#9a8f7e" stroke-width="2"/>`;
-    s += `<clipPath id="akt-clipdisc"><circle cx="${cx}" cy="${cy}" r="${R - 4}"/></clipPath>`;
-    let grooves = '';
-    for (let y = cy - R; y <= cy + R; y += 7) grooves += `<line x1="${cx - R}" y1="${y}" x2="${cx + R}" y2="${y}" stroke="#2f2a24" stroke-width="1.6" opacity=".7"/>`;
-    s += `<g clip-path="url(#akt-clipdisc)">${grooves}</g>`;
-    // dos tornillos avellanados (fijación del disco), arriba y abajo
-    [[cx, cy - R + 22], [cx, cy + R - 22]].forEach(([x, y]) => {
-      s += `<circle cx="${x}" cy="${y}" r="12" fill="#1f1c18"/><circle cx="${x}" cy="${y}" r="9" fill="url(#akt-screw)"/><line x1="${x - 5}" y1="${y - 5}" x2="${x + 5}" y2="${y + 5}" stroke="#2a2a2a" stroke-width="2"/><line x1="${x + 5}" y1="${y - 5}" x2="${x - 5}" y2="${y + 5}" stroke="#2a2a2a" stroke-width="2"/>`;
+    s += `<line x1="${cx}" y1="94" x2="${cx}" y2="62" stroke="${C.fg2}" stroke-width="2" marker-end="url(#akt-arr)"/>` + T(cx, 56, 'delante del kart');
+    s += T(60, 112, 'chasis', { anchor: 'start' }) + T(440, 112, 'fuera', { anchor: 'end' });
+    // disco: canto, aro exterior y fondo
+    s += `<circle cx="${cx}" cy="${cy + 6}" r="${R}" fill="#121315"/>`;
+    s += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#akt-disc)" stroke="#5b5f66" stroke-width="2"/>`;
+    s += `<circle cx="${cx}" cy="${cy}" r="${R - 14}" fill="#1b1d20" stroke="#0f1012" stroke-width="2"/>`;
+    // rebaje rectangular ranurado (ranuras horizontales)
+    let gro = '';
+    for (let y = cy - ry; y <= cy + ry; y += pt) gro += `<line x1="${cx - rx}" y1="${y}" x2="${cx + rx}" y2="${y}" stroke="${(Math.round((y - cy) / pt) % 2) ? '#2b2e33' : '#4c5057'}" stroke-width="2.2"/>`;
+    s += `<g clip-path="url(#akt-clipdisc)"><rect x="${cx - rx}" y="${cy - ry}" width="${2 * rx}" height="${2 * ry}" fill="#202226"/>${gro}</g>`;
+    // bloques laterales en media luna (alojan los prisioneros)
+    [-1, 1].forEach(d => {
+      const xin = cx + d * (rx + 4), yy = 80;
+      const xo = cx + d * Math.sqrt((R - 14) ** 2 - yy ** 2);
+      s += `<path d="M${xin},${cy - yy} L${xo},${cy - yy} A${R - 14},${R - 14} 0 0 ${d > 0 ? 1 : 0} ${xo},${cy + yy} L${xin},${cy + yy} Z" fill="url(#akt-block)" stroke="#8a8f97" stroke-width="2.5"/>`;
+      s += `<path d="M${xin + d * 3},${cy - yy + 4} L${xin + d * 3},${cy + yy - 4}" stroke="#0e0f11" stroke-width="3"/>`;
     });
-    // ventana hexagonal alargada con dentado en los dos laterales
-    const wx = 70, wy = 112;  // semianchos de la ventana
-    s += `<path d="M${cx - wx + 18},${cy - wy} h${2 * wx - 36} l18,18 v${2 * wy - 36} l-18,18 h-${2 * wx - 36} l-18,-18 v-${2 * wy - 36} z" fill="#15140f" stroke="#a89c88" stroke-width="2"/>`;
-    let teeth = '';
-    for (let y = cy - wy + 20; y <= cy + wy - 22; y += 9) {
-      teeth += `<path d="M${cx - wx},${y} l9,4.5 l-9,4.5 z" fill="${C.tooth}"/><path d="M${cx + wx},${y} l-9,4.5 l9,4.5 z" fill="${C.tooth}"/>`;
+    // escalas en el borde interior de los bloques (0 al centro, + hacia atrás)
+    let sc = '';
+    for (let k = -5; k <= 5; k++) {
+      const y = cy + k * pt, big = k % 5 === 0;
+      [-1, 1].forEach(d => {
+        const x = cx + d * (rx + 6);
+        sc += `<line x1="${x}" y1="${y}" x2="${x + d * (big ? 12 : 6)}" y2="${y}" stroke="${k === 0 ? C.acc : '#d9dce1'}" stroke-width="${big ? 2 : 1}"/>`;
+        if (big && k !== 0) sc += T(x + d * 21, y + 4, (k > 0 ? '+' : '−') + Math.abs(k), { size: 10, fill: '#d9dce1' });
+      });
     }
-    s += teeth;
-    // escala de caster junto a la ventana
-    s += T(cx - wx - 14, cy - 90 + 4, '−10', { anchor: 'end', size: 11 }) + T(cx - wx - 14, cy + 4, '0', { anchor: 'end', size: 12, fill: C.acc, bold: true }) + T(cx - wx - 14, cy + 90 + 4, '+10', { anchor: 'end', size: 11 });
-    s += `<line x1="${cx - wx}" y1="${cy}" x2="${cx + wx}" y2="${cy}" stroke="${C.acc}" stroke-width="1.5" stroke-dasharray="4 3"/>`;
-    // corredera (bloque dentado) con el tornillo del pivote (cabeza allen)
-    s += `<rect x="${slX - 46}" y="${slY - 32}" width="92" height="64" rx="5" fill="url(#akt-slider)" stroke="#b5ad9f" stroke-width="2"/>`;
-    s += `<rect x="${slX - 46}" y="${slY - 32}" width="92" height="8" fill="#9c958a" opacity=".6"/>`;
-    s += `<circle cx="${slX}" cy="${slY}" r="27" fill="#c9c9c9"/><circle cx="${slX}" cy="${slY}" r="24" fill="url(#akt-bolt)"/><circle cx="${slX}" cy="${slY}" r="14" fill="#3a3a3a"/>`;
-    s += `<polygon points="${slX},${slY - 9} ${slX + 8},${slY - 4.5} ${slX + 8},${slY + 4.5} ${slX},${slY + 9} ${slX - 8},${slY + 4.5} ${slX - 8},${slY - 4.5}" fill="#111"/>`;
-    // tornillos laterales (prisioneros) que empujan la corredera
-    [[cx - R - 6, -1], [cx + R + 6, 1]].forEach(([x, d]) => {
-      s += `<rect x="${d < 0 ? x - 46 : x}" y="${slY - 10}" width="46" height="20" rx="3" fill="url(#akt-screw)" stroke="${C.blue}" stroke-width="2.5"/>`;
-      s += `<line x1="${d < 0 ? x - 36 : x + 10}" y1="${slY - 6}" x2="${d < 0 ? x - 36 : x + 10}" y2="${slY + 6}" stroke="#333" stroke-width="2"/>`;
-      s += `<line x1="${d < 0 ? x : x}" y1="${slY}" x2="${d < 0 ? slX - 46 : slX + 46}" y2="${slY}" stroke="${C.blue}" stroke-width="2" stroke-dasharray="4 3"/>`;
+    s += sc;
+    // tornillos allen arriba y abajo, en el aro
+    [[cx, cy - R + 18], [cx, cy + R - 18]].forEach(([x, y]) => {
+      s += `<circle cx="${x}" cy="${y}" r="20" fill="#16171a" stroke="#4d5157" stroke-width="2"/><circle cx="${x}" cy="${y}" r="14" fill="url(#akt-pin)"/>`;
+      s += `<polygon points="${[0, 60, 120, 180, 240, 300].map(a => `${x + 6 * Math.cos(a * Math.PI / 180)},${y + 6 * Math.sin(a * Math.PI / 180)}`).join(' ')}" fill="#050506"/>`;
     });
+    // prisioneros laterales con punta (camber): asoman por fuera y empujan la corredera
+    [-1, 1].forEach(d => {
+      const xo = cx + d * (R + 16), xb = cx + d * (R - 8), xt = slX + d * (swx + 2);
+      s += `<rect x="${Math.min(xo, xb)}" y="${cy - 10}" width="${Math.abs(xo - xb)}" height="20" rx="3" fill="url(#akt-grub)" stroke="${C.blue}" stroke-width="2"/>`;
+      const x1 = cx + d * (rx + 2), xr = xt + d * 12;
+      if (d * (x1 - xr) > 0) {
+        s += `<rect x="${Math.min(x1, xr)}" y="${cy - 8}" width="${Math.abs(x1 - xr)}" height="16" fill="url(#akt-grub)"/>`;
+        let th = ''; for (let x = Math.min(x1, xr) + 2; x < Math.max(x1, xr); x += 4) th += `<line x1="${x}" y1="${cy - 8}" x2="${x + 2}" y2="${cy + 8}" stroke="#555" stroke-width="1"/>`;
+        s += th;
+      }
+      s += `<polygon points="${xr},${cy - 8} ${xt},${cy} ${xr},${cy + 8}" fill="#8a8f96"/>`;
+    });
+    // corredera de aluminio con esquinas achaflanadas
+    const ch = 14, X0 = slX - swx, X1 = slX + swx, Y0 = slY - swy, Y1 = slY + swy;
+    const plate = `M${X0 + ch},${Y0} H${X1 - ch} L${X1},${Y0 + ch} V${Y1 - ch} L${X1 - ch},${Y1} H${X0 + ch} L${X0},${Y1 - ch} V${Y0 + ch} Z`;
+    s += `<path d="${plate}" fill="#0d0e10" opacity=".6" transform="translate(4 6)"/>`;
+    s += `<path d="${plate}" fill="url(#akt-alu)" stroke="#eef0f3" stroke-width="2"/>`;
+    let br = ''; for (let y = Y0 + 6; y < Y1 - 4; y += 7) br += `<line x1="${X0 + 8}" y1="${y}" x2="${X1 - 8}" y2="${y}" stroke="#ffffff" stroke-width=".6" opacity=".25"/>`;
+    s += br;
+    // arandela, tuerca hexagonal, casquillo y cabeza del pivote
+    const hex = (r, rot = 30) => [0, 60, 120, 180, 240, 300].map(a => `${slX + r * Math.cos((a + rot) * Math.PI / 180)},${slY + r * Math.sin((a + rot) * Math.PI / 180)}`).join(' ');
+    s += `<circle cx="${slX}" cy="${slY}" r="56" fill="url(#akt-nut)" stroke="#d7dbe0" stroke-width="2"/>`;
+    s += `<polygon points="${hex(48)}" fill="url(#akt-nut)" stroke="#7d838b" stroke-width="2"/>`;
+    s += `<circle cx="${slX}" cy="${slY}" r="34" fill="#c9cdd3" stroke="#8b9199" stroke-width="2"/>`;
+    s += `<circle cx="${slX}" cy="${slY}" r="24" fill="url(#akt-pin)"/><circle cx="${slX}" cy="${slY}" r="13" fill="#1b1d20" stroke="#3c4046" stroke-width="2"/>`;
+    // lectura de la corredera contra la escala
+    s += `<line x1="${X0}" y1="${slY}" x2="${cx - rx - 6}" y2="${slY}" stroke="${C.acc}" stroke-width="2.5"/><line x1="${X1}" y1="${slY}" x2="${cx + rx + 6}" y2="${slY}" stroke="${C.acc}" stroke-width="2.5"/>`;
     // flechas explicativas
-    s += `<line x1="${cx + R + 36}" y1="${cy - 90}" x2="${cx + R + 36}" y2="${cy + 90}" stroke="${C.acc}" stroke-width="3" marker-start="url(#akt-arr)" marker-end="url(#akt-arr)"/>` + T(cx + R + 62, cy, 'CASTER · diente a diente', { fill: C.acc, bold: true, rot: 90 });
-    s += `<line x1="${cx - 50}" y1="470" x2="${cx + 50}" y2="470" stroke="${C.blue}" stroke-width="3" marker-start="url(#akt-arrb)" marker-end="url(#akt-arrb)"/>` + T(cx, 492, 'CAMBER · tornillos laterales', { fill: C.blue, bold: true });
+    s += `<line x1="452" y1="${cy - 80}" x2="452" y2="${cy + 80}" stroke="${C.acc}" stroke-width="3" marker-start="url(#akt-arr)" marker-end="url(#akt-arr)"/>` + T(474, cy, 'CASTER · la corredera salta de ranura', { fill: C.acc, bold: true, rot: 90, size: 11 });
+    s += `<line x1="${cx - 55}" y1="460" x2="${cx + 55}" y2="460" stroke="${C.blue}" stroke-width="3" marker-start="url(#akt-arrb)" marker-end="url(#akt-arrb)"/>` + T(cx, 484, 'CAMBER · los prisioneros empujan la corredera', { fill: C.blue, bold: true, size: 12 });
     // panel derecho
     s += `<rect x="490" y="105" width="380" height="340" rx="12" fill="#222529" stroke="${C.line}"/>`;
     s += T(680, 138, 'Valores de la sesión', { fill: C.fg, size: 15, bold: true });
     s += T(515, 180, 'Caster', { anchor: 'start', size: 14 }) + T(845, 180, `${cas > 0 ? '+' : ''}${cas} ${Math.abs(cas) === 1 ? 'punto' : 'puntos'}`, { anchor: 'end', size: 20, fill: C.acc, bold: true });
     s += T(515, 214, 'Camber (Sniper)', { anchor: 'start', size: 14 }) + T(845, 214, `${cam > 0 ? '+' : ''}${fmt(cam, 1)} mm`, { anchor: 'end', size: 20, fill: C.blue, bold: true });
-    // vista lateral (caster)
-    const ang = cas * 1.2;
-    s += T(590, 255, 'Vista lateral', { size: 12 });
-    s += `<line x1="552" y1="243" x2="520" y2="243" stroke="${C.fg2}" stroke-width="2" marker-end="url(#akt-arr)"/>` + T(536, 236, 'adelante', { size: 9 });
-    s += `<rect x="560" y="268" width="60" height="18" rx="5" fill="${C.metal}" stroke="${C.line}"/><rect x="560" y="392" width="60" height="18" rx="5" fill="${C.metal}" stroke="${C.line}"/>`;
-    s += `<line x1="590" y1="262" x2="590" y2="416" stroke="${C.line}" stroke-width="3" stroke-dasharray="6 5"/>`;
-    s += `<line x1="590" y1="262" x2="590" y2="416" stroke="${C.acc}" stroke-width="5" stroke-linecap="round" transform="rotate(${-ang} 590 339)"/>`;
-    s += T(590, 432, cas > 0 ? 'superior hacia atrás = +' : cas < 0 ? 'superior hacia delante = −' : 'neutro', { size: 11 });
-    // vista frontal (camber): mangueta + rueda, inclinación según camber
-    const camAng = Math.max(-10, Math.min(10, cam * 2.5));
-    s += T(770, 255, 'Vista frontal', { size: 12 }) + T(700, 272, 'chasis', { size: 9 }) + T(852, 272, 'fuera', { size: 9 });
-    s += `<g transform="rotate(${camAng} 740 410)">
-      <line x1="740" y1="270" x2="740" y2="410" stroke="${C.blue}" stroke-width="5" stroke-linecap="round"/>
-      <rect x="735" y="330" width="60" height="14" rx="4" fill="#8c8c8c"/>
-      <rect x="795" y="282" width="40" height="124" rx="8" fill="#2f6b86" stroke="#5fb3d6" stroke-width="3"/>
-    </g>`;
-    s += `<line x1="700" y1="412" x2="860" y2="412" stroke="${C.fg2}" stroke-width="2"/>`;
-    s += T(770, 432, cam < 0 ? 'negativo: rueda cerrada arriba' : cam > 0 ? 'positivo: rueda abierta arriba' : 'neutro', { size: 11 });
+    // vista lateral (caster): rueda delantera de lado, referencia vertical y eje de dirección
+    const ang = Math.max(-15, Math.min(15, cas * 1.5));       // exagerado para que se vea
+    const wx = 590, wy = 356, wr = 54, gy = wy + wr;
+    s += T(590, 252, 'CASTER · vista lateral', { size: 12, fill: C.acc, bold: true });
+    s += `<line x1="542" y1="292" x2="508" y2="292" stroke="${C.fg2}" stroke-width="2" marker-end="url(#akt-arr)"/>` + T(525, 283, 'delante', { size: 10 });
+    s += `<line x1="505" y1="${gy}" x2="675" y2="${gy}" stroke="${C.fg2}" stroke-width="2"/>`;
+    s += `<circle cx="${wx}" cy="${wy}" r="${wr}" fill="#16181b" stroke="#5c6168" stroke-width="10"/><circle cx="${wx}" cy="${wy}" r="${wr - 18}" fill="#2b2e33" stroke="#9aa0ab" stroke-width="3"/><circle cx="${wx}" cy="${wy}" r="6" fill="#9aa0ab"/>`;
+    s += `<line x1="${wx}" y1="${wy - 95}" x2="${wx}" y2="${gy + 2}" stroke="#e5484d" stroke-width="2" stroke-dasharray="6 5"/>`;
+    s += `<g transform="rotate(${ang} ${wx} ${wy})"><line x1="${wx}" y1="${wy - 92}" x2="${wx}" y2="${wy + 40}" stroke="${C.acc}" stroke-width="5" stroke-linecap="round"/>
+      <rect x="${wx - 13}" y="${wy - 96}" width="26" height="10" rx="3" fill="${C.metal}" stroke="${C.fg2}"/><rect x="${wx - 13}" y="${wy - 22}" width="26" height="10" rx="3" fill="${C.metal}" stroke="${C.fg2}"/></g>`;
+    s += T(590, 432, cas > 0 ? 'positivo: eje inclinado hacia atrás' : cas < 0 ? 'negativo: eje inclinado hacia delante' : 'neutro: eje vertical', { size: 11 });
+    // vista frontal (camber): las dos ruedas delanteras de frente
+    const ca = Math.max(-12, Math.min(12, cam * 3));          // grados visuales; negativo = cerradas arriba
+    const lx = 722, rwx = 838, wyc = 352, ww = 26, wh = 104;
+    s += T(780, 252, 'CAMBER · vista frontal', { size: 12, fill: C.blue, bold: true });
+    s += `<line x1="695" y1="${wyc + wh / 2 + 2}" x2="865" y2="${wyc + wh / 2 + 2}" stroke="${C.fg2}" stroke-width="2"/>`;
+    s += `<rect x="${lx + 14}" y="${wyc - 6}" width="${rwx - lx - 28}" height="12" rx="4" fill="${C.metal}" stroke="${C.fg2}"/>`;
+    [[lx, -ca], [rwx, ca]].forEach(([x, r]) => {
+      s += `<line x1="${x}" y1="${wyc - wh / 2 - 18}" x2="${x}" y2="${wyc + wh / 2 + 2}" stroke="#e5484d" stroke-width="2" stroke-dasharray="6 5"/>`;
+      s += `<g transform="rotate(${r} ${x} ${wyc + wh / 2})"><rect x="${x - ww / 2}" y="${wyc - wh / 2}" width="${ww}" height="${wh}" rx="7" fill="#16181b" stroke="#5c6168" stroke-width="4"/>
+        <line x1="${x}" y1="${wyc - wh / 2 - 14}" x2="${x}" y2="${wyc + wh / 2}" stroke="${C.blue}" stroke-width="3"/></g>`;
+    });
+    s += T(780, 432, cam < 0 ? 'negativo: ruedas cerradas arriba' : cam > 0 ? 'positivo: ruedas abiertas arriba' : 'neutro: ruedas verticales', { size: 11 });
     s += T(W / 2, 522, 'CRG: más caster con pista fría, gomas duras o subviraje · menos si sobra agarre o la dirección pesa · camber −2 mm por lado en seco, 0 en mojado (Sniper)', { size: 11 });
     return s + '</svg>';
   }
 
-  /* ---------- 2. ALTURA DELANTERA · arandelas arriba/abajo (gruesa=1, fina=0,5) ---------- */
+  /* ---------- 2. ALTURA DELANTERA · arandelas arriba/abajo (curvada=1, cónica=0,5) ---------- */
   function alturaDelantera({ arriba = 2, abajo = 2 } = {}) {
-    const W = 900, H = 470;
-    const up = Number(arriba || 0), dn = Number(abajo || 0);
+    const W = 900, H = 480;
+    const up = Math.max(0, Number(arriba || 0)), dn = Math.max(0, Number(abajo || 0));
     let s = svgOpen(W, H, 'Altura delantera · arandelas del pivote');
-    // horquilla (C) vista de frente, pivote vertical
-    s += `<path d="M160,90 h200 v34 h-150 v232 h150 v34 h-200 z" fill="${C.metal}" stroke="${C.line}" stroke-width="3"/>`;
-    s += T(165, 84, 'brazo superior (soporte caster)', { size: 11, anchor: 'start' }) + T(165, 406, 'brazo inferior', { size: 11, anchor: 'start' });
-    // pivote
-    s += `<rect x="252" y="100" width="16" height="280" rx="3" fill="#8c8c8c" stroke="#d0d0d0" stroke-width="2"/>`;
-    // apilado de arandelas: arriba desde y=124 hacia abajo; abajo desde y=356 hacia arriba
-    const thick = 20, thin = 9, x0 = 206, w = 108;
-    // separador de valor 1: curvado arriba y abajo (perfil tipo lente)
-    const doble = y => `<path d="M${x0},${y + thick / 2} C${x0 + 14},${y + 2} ${x0 + 30},${y + 1} ${x0 + w / 2},${y + 1} S${x0 + w - 14},${y + 2} ${x0 + w},${y + thick / 2} C${x0 + w - 14},${y + thick - 2} ${x0 + w - 30},${y + thick - 1} ${x0 + w / 2},${y + thick - 1} S${x0 + 14},${y + thick - 2} ${x0},${y + thick / 2} Z" fill="#8a8f99" stroke="#dfe3ea" stroke-width="1.5"/>`;
-    // separador de valor 0,5: cónico (curvado solo por arriba, plano por abajo)
-    const conica = y => `<path d="M${x0 + 4},${y + thin - 1} C${x0 + 20},${y + thin - 1} ${x0 + 26},${y + 1} ${x0 + 40},${y + 1} H${x0 + w - 40} C${x0 + w - 26},${y + 1} ${x0 + w - 20},${y + thin - 1} ${x0 + w - 4},${y + thin - 1} Z" fill="#c9ced8" stroke="#eef1f5" stroke-width="1"/>`;
+    s += `<defs>
+      <linearGradient id="akt-c" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#55595f"/><stop offset="1" stop-color="#2a2c30"/></linearGradient>
+      <linearGradient id="akt-chrome" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6f757d"/><stop offset=".35" stop-color="#eef1f4"/><stop offset=".6" stop-color="#9aa1a9"/><stop offset="1" stop-color="#4c5157"/></linearGradient>
+      <linearGradient id="akt-chromeH" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6f757d"/><stop offset=".35" stop-color="#eef1f4"/><stop offset=".65" stop-color="#9aa1a9"/><stop offset="1" stop-color="#4c5157"/></linearGradient>
+      <linearGradient id="akt-wash" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6d737b"/><stop offset=".4" stop-color="#d9dde2"/><stop offset="1" stop-color="#5d6269"/></linearGradient>
+      <linearGradient id="akt-washB" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3f6e86"/><stop offset=".4" stop-color="#9fd0e6"/><stop offset="1" stop-color="#355e73"/></linearGradient>
+    </defs>`;
+    // ----- mangueta montada en la C (vista de frente, rueda a la izquierda) -----
+    const kx = 300, yTop = 150, yBot = 390;            // pivote; cara inferior del brazo sup. y superior del brazo inf.
+    const U = 20, Hh = 10;                             // altura de arandela de 1 y de 0,5
+    // tubo del chasis y C soldada
+    s += `<path d="M430,300 L478,350" stroke="#25272b" stroke-width="44" stroke-linecap="round"/><path d="M430,300 L478,350" stroke="#3a3d42" stroke-width="34" stroke-linecap="round"/>`;
+    s += `<path d="M205,${yTop - 22} H420 Q440,${yTop - 22} 440,${yTop - 2} V${yBot + 2} Q440,${yBot + 22} 420,${yBot + 22} H205 V${yBot} H412 V${yTop} H205 Z" fill="url(#akt-c)" stroke="#7d828a" stroke-width="2"/>`;
+    s += T(426, yBot + 46, 'C del chasis', { size: 11 });
+    // soporte caster sobre el brazo superior y cabeza del pivote
+    s += `<rect x="${kx - 70}" y="${yTop - 34}" width="140" height="12" rx="3" fill="#41454b" stroke="#8a8f97"/>`;
+    s += `<rect x="${kx - 30}" y="${yTop - 46}" width="60" height="12" rx="3" fill="url(#akt-chromeH)" stroke="#c9ced5"/>`;
+    s += `<rect x="${kx - 16}" y="${yTop - 74}" width="32" height="30" rx="7" fill="#2b2e33" stroke="#7d828a" stroke-width="2"/><rect x="${kx - 12}" y="${yTop - 72}" width="10" height="24" rx="4" fill="#ffffff" opacity=".12"/>`;
+    s += T(kx + 84, yTop - 30, 'soporte caster', { anchor: 'start', size: 11 });
+    // pivote (visible por fuera)
+    s += `<rect x="${kx - 7}" y="${yTop - 22}" width="14" height="${yBot - yTop + 70}" fill="#8b9199"/>`;
+    // tuerca inferior y punta del pivote
+    s += `<rect x="${kx - 26}" y="${yBot + 22}" width="52" height="10" rx="3" fill="url(#akt-wash)"/>`;
+    s += `<polygon points="${kx - 22},${yBot + 32} ${kx + 22},${yBot + 32} ${kx + 26},${yBot + 44} ${kx + 22},${yBot + 56} ${kx - 22},${yBot + 56} ${kx - 26},${yBot + 44}" fill="url(#akt-chrome)" stroke="#5c6168"/>`;
+    s += `<rect x="${kx - 7}" y="${yBot + 56}" width="14" height="14" fill="#1b1d20"/>`;
+    // apilado de arandelas: curvada (1) = abombada arriba y abajo; cónica (0,5) = plana abajo, cónica arriba
+    const curv = (y, flipBlue) => { const x0 = kx - 44, w = 88, h = U - 2;
+      return `<path d="M${x0},${y + h / 2} C${x0 + 6},${y} ${x0 + 20},${y} ${kx},${y} S${x0 + w - 6},${y} ${x0 + w},${y + h / 2} C${x0 + w - 6},${y + h} ${x0 + w - 20},${y + h} ${kx},${y + h} S${x0 + 6},${y + h} ${x0},${y + h / 2} Z" fill="url(#${flipBlue ? 'akt-washB' : 'akt-wash'})" stroke="#e7eaee" stroke-width="1.2"/>`; };
+    const coni = (y, down) => { const x0 = kx - 40, w = 80, h = Hh - 1;
+      return down ? `<path d="M${x0 + 12},${y + h} H${x0 + w - 12} L${x0 + w},${y} H${x0} Z" fill="url(#akt-wash)" stroke="#e7eaee" stroke-width="1"/>`
+                  : `<path d="M${x0},${y + h} H${x0 + w} L${x0 + w - 12},${y} H${x0 + 12} Z" fill="url(#akt-wash)" stroke="#e7eaee" stroke-width="1"/>`; };
     const stack = (total, yStart, dir) => {
-      let out = '', y = yStart, rem = total;
-      const n1 = Math.floor(rem), half = rem - n1 > 0.25;
-      const parts = []; for (let i = 0; i < n1; i++) parts.push(thick); if (half) parts.push(thin);
-      parts.forEach(h => { const yy = dir > 0 ? y : y - h; out += h === thick ? doble(yy) : conica(yy); y += dir * h; });
+      let out = '', y = yStart; const n1 = Math.floor(total + 1e-9), half = total - n1 > 0.25;
+      const parts = []; for (let i = 0; i < n1; i++) parts.push(U); if (half) parts.push(Hh);
+      parts.forEach((h, i) => { const yy = dir > 0 ? y : y - h; out += h === U ? curv(yy, i % 2 === 1) : coni(yy, dir < 0); y += dir * h; });
       return { out, y };
     };
-    const a = stack(up, 126, 1), b = stack(dn, 354, -1);
-    s += a.out + b.out;
-    // mangueta entre ambos apilados
-    const topY = a.y + 2, botY = b.y - 2;
-    s += `<rect x="196" y="${topY}" width="128" height="${Math.max(30, botY - topY)}" rx="10" fill="#2f6b86" stroke="#5fb3d6" stroke-width="3"/>` + T(260, (topY + botY) / 2 + 5, 'mangueta', { fill: C.fg, size: 13, bold: true });
-    // etiquetas
-    s += T(340, 140, `arriba: ${fmt(up)}`, { anchor: 'start', fill: C.acc, size: 16, bold: true }) + T(340, 340, `abajo: ${fmt(dn)}`, { anchor: 'start', fill: C.acc, size: 16, bold: true });
-    s += `<path d="M60,428 C66,420 72,419 80,419 S94,420 100,428 C94,436 88,437 80,437 S66,436 60,428 Z" fill="#8a8f99" stroke="#dfe3ea"/>` + T(108, 432, '= 1 (curvado arriba y abajo)', { anchor: 'start', size: 11 }) + `<path d="M302,434 C308,434 310,428 316,428 H324 C330,428 332,434 338,434 Z" fill="#c9ced8" stroke="#eef1f5"/>` + T(346, 435, '= 0,5 (cónico)', { anchor: 'start', size: 11 });
-    // panel efecto: silueta lateral de kart, chasis inclinado según el reparto de arandelas
-    const total = up + dn, ratio = total ? dn / total : 0.5; // más abajo → mangueta sube → chasis baja delante
-    s += `<rect x="500" y="90" width="370" height="310" rx="12" fill="#222529" stroke="${C.line}"/>`;
-    s += T(685, 122, 'Efecto en el chasis', { fill: C.fg, size: 15, bold: true });
-    const groundY = 340, frontX = 590, rearX = 800;
-    const tilt = (ratio - 0.5) * 14;      // px: delantera baja → chasis cae hacia la izquierda
-    const frameFront = groundY - 30 + tilt, frameRear = groundY - 34 - tilt;
-    s += `<line x1="520" y1="${groundY}" x2="860" y2="${groundY}" stroke="${C.fg2}" stroke-width="2"/>`;
-    // chasis (tubo) con pontón, asiento, columna y motor
-    s += `<path d="M${frontX - 30},${frameFront} L${rearX + 10},${frameRear}" stroke="${C.acc}" stroke-width="7" stroke-linecap="round"/>`;
-    s += `<path d="M${frontX - 48},${frameFront - 10} q0,-28 40,-30 l30,-2" stroke="#9aa0ab" stroke-width="5" fill="none" stroke-linecap="round"/>`;             // carenado frontal
-    s += `<line x1="${frontX + 10}" y1="${frameFront - 4}" x2="${frontX + 64}" y2="${frameFront - 66}" stroke="#9aa0ab" stroke-width="4"/><circle cx="${frontX + 70}" cy="${frameFront - 72}" r="12" fill="none" stroke="#9aa0ab" stroke-width="4"/>`; // columna + volante
-    s += `<path d="M${rearX - 110},${frameRear - 6} q-8,-50 30,-56 l4,0 q6,30 -6,56 z" fill="#2f6b86" stroke="#5fb3d6" stroke-width="2"/>`;  // asiento
-    s += `<rect x="${rearX - 72}" y="${frameRear - 44}" width="46" height="40" rx="6" fill="#4a4f58" stroke="#9aa0ab" stroke-width="2"/>`;  // motor
-    s += `<rect x="${rearX - 150}" y="${frameRear + 2}" width="150" height="10" rx="4" fill="#3a3e46"/>`;                                  // pontón lateral
-    // ruedas (la trasera más grande)
-    s += `<circle cx="${frontX}" cy="${groundY - 28}" r="28" fill="#1a1c20" stroke="#9aa0ab" stroke-width="5"/><circle cx="${frontX}" cy="${groundY - 28}" r="9" fill="#5a5f69"/>`;
-    s += `<circle cx="${rearX}" cy="${groundY - 32}" r="32" fill="#1a1c20" stroke="#9aa0ab" stroke-width="5"/><circle cx="${rearX}" cy="${groundY - 32}" r="10" fill="#5a5f69"/>`;
-    s += T(685, 160, ratio > 0.6 ? 'delantera BAJA' : ratio < 0.4 ? 'delantera ALTA' : 'delantera MEDIA', { fill: C.acc, bold: true, size: 14 });
-    s += T(frontX, groundY + 18, 'delante', { size: 10 }) + T(rearX, groundY + 18, 'detrás', { size: 10 });
-    s += T(685, 385, 'más arandelas abajo = mangueta sube = chasis más bajo delante', { size: 11 });
-    s += T(W / 2, 452, 'CRG: delantera baja → más sobreviraje y mordida de entrada · alta → más subviraje · lluvia → lo más alta posible', { size: 11 });
+    const A = stack(up, yTop, 1), B = stack(dn, yBot, -1);
+    // cuerpo de la mangueta entre los dos apilados + eje de la rueda hacia la izquierda
+    const mt = A.y + 1, mb = B.y - 1, mm = (mt + mb) / 2;
+    s += `<rect x="40" y="${mm - 16}" width="${kx - 80}" height="32" rx="6" fill="url(#akt-chromeH)" stroke="#c9ced5"/>`;
+    s += `<rect x="40" y="${mm - 22}" width="40" height="44" rx="6" fill="#2f6b86" stroke="#5fb3d6" stroke-width="2"/>` + T(60, mm + 40, 'hacia la rueda', { size: 10 });
+    s += `<rect x="${kx - 42}" y="${mt}" width="84" height="${Math.max(20, mb - mt)}" rx="10" fill="url(#akt-chrome)" stroke="#d9dde2" stroke-width="1.5"/>`;
+    s += `<path d="M${kx - 42},${mm - 18} Q${kx - 60},${mm} ${kx - 42},${mm + 18}" fill="none" stroke="#c9ced5" stroke-width="3"/>`;
+    s += T(kx, mm + 4, 'mangueta', { size: 12, fill: '#1b1d20', bold: true });
+    s += A.out + B.out;
+    // cotas
+    s += T(kx - 54, yTop + 6 + (A.y - yTop) / 2, `arriba ${fmt(up)}`, { anchor: 'end', fill: C.acc, size: 15, bold: true });
+    s += T(kx - 54, yBot + 6 - (yBot - B.y) / 2, `abajo ${fmt(dn)}`, { anchor: 'end', fill: C.acc, size: 15, bold: true });
+    // leyenda
+    s += `<path d="M30,76 C34,68 42,68 50,68 S66,68 70,76 C66,84 58,84 50,84 S34,84 30,76 Z" fill="url(#akt-wash)" stroke="#e7eaee"/>` + T(78, 80, '= 1 (curvada arriba y abajo)', { anchor: 'start', size: 11 });
+    s += `<path d="M30,100 H70 L62,110 H38 Z" fill="url(#akt-wash)" stroke="#e7eaee"/>` + T(78, 108, '= 0,5 (cónica)', { anchor: 'start', size: 11 });
+
+    // ----- vista lateral del kart (delante a la izquierda), el chasis pivota sobre el eje trasero -----
+    const total = up + dn, ratio = total ? dn / total : 0.5;         // más abajo → mangueta sube → chasis baja delante
+    const ang = -(ratio - 0.5) * 10;                                    // grados (exagerado para que se vea)
+    const px0 = 500, gy = 372, ox = px0 + 12;                          // origen del dibujo del kart
+    s += `<rect x="${px0}" y="90" width="370" height="340" rx="12" fill="#222529" stroke="${C.line}"/>`;
+    s += T(685, 120, 'Efecto en el chasis · vista lateral', { fill: C.fg, size: 14, bold: true });
+    s += T(685, 162, ratio > 0.6 ? 'delantera BAJA' : ratio < 0.4 ? 'delantera ALTA' : 'delantera MEDIA', { fill: C.acc, bold: true, size: 17 });
+    s += `<line x1="${ox + 46}" y1="196" x2="${ox + 10}" y2="196" stroke="${C.fg2}" stroke-width="2" marker-end="url(#akt-arr)"/>` + T(ox + 28, 188, 'delante', { size: 10 });
+    s += `<line x1="${px0 + 12}" y1="${gy}" x2="${px0 + 358}" y2="${gy}" stroke="${C.fg2}" stroke-width="2"/>`;
+    // referencia: chasis horizontal
+    s += `<line x1="${px0 + 12}" y1="${gy - 32}" x2="${px0 + 358}" y2="${gy - 32}" stroke="#e5484d" stroke-width="1.5" stroke-dasharray="6 5"/>`;
+    // carrocería en coordenadas locales (suelo y=0), gira alrededor del eje trasero
+    const fw = [62, -26, 26], rw = [282, -32, 32];
+    s += `<g transform="translate(${ox} ${gy})"><g transform="rotate(${ang} ${rw[0]} ${rw[1]})">
+      <path d="M262,-30 C270,-58 300,-66 322,-58 L338,-40" fill="none" stroke="#7d828a" stroke-width="6" stroke-linecap="round"/>
+      <path d="M300,-24 H346 M332,-24 V-40" stroke="#9aa0ab" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path d="M20,-30 H318" stroke="#6b707a" stroke-width="7" stroke-linecap="round"/>
+      <path d="M2,-20 H44" stroke="#9aa0ab" stroke-width="5" stroke-linecap="round"/>
+      <path d="M8,-30 C10,-54 36,-70 78,-72 L114,-70 C124,-60 126,-44 120,-32 Z" fill="${C.acc}" stroke="#ffb27a" stroke-width="1.5"/>
+      <path d="M84,-72 L104,-90 L116,-88 L112,-70" fill="#d55a14" stroke="#ffb27a" stroke-width="1"/>
+      <line x1="116" y1="-52" x2="158" y2="-104" stroke="#9aa0ab" stroke-width="4" stroke-linecap="round"/>
+      <ellipse cx="163" cy="-110" rx="6" ry="24" transform="rotate(-35 163 -110)" fill="none" stroke="#d0d4da" stroke-width="5"/>
+      <rect x="132" y="-48" width="112" height="18" rx="8" fill="${C.acc}" stroke="#ffb27a" stroke-width="1.5"/>
+      <path d="M182,-30 C184,-56 188,-94 204,-118 Q212,-128 226,-126 L232,-120 Q216,-100 214,-70 L216,-44 C218,-36 226,-32 236,-30 Z" fill="#2f6b86" stroke="#5fb3d6" stroke-width="2"/>
+      <rect x="238" y="-84" width="46" height="46" rx="7" fill="#4a4f58" stroke="#9aa0ab" stroke-width="2"/>
+      <rect x="246" y="-96" width="30" height="14" rx="4" fill="#5c6168" stroke="#9aa0ab" stroke-width="1.5"/>
+      <path d="M280,-64 C304,-76 330,-72 344,-54" fill="none" stroke="#b9bec6" stroke-width="8" stroke-linecap="round"/>
+    </g>
+      <circle cx="${fw[0]}" cy="${fw[1]}" r="${fw[2]}" fill="#141518" stroke="#4d5157" stroke-width="9"/><circle cx="${fw[0]}" cy="${fw[1]}" r="${fw[2] - 14}" fill="#2b2e33" stroke="#b9bec6" stroke-width="2.5"/>
+      <circle cx="${rw[0]}" cy="${rw[1]}" r="${rw[2]}" fill="#141518" stroke="#4d5157" stroke-width="11"/><circle cx="${rw[0]}" cy="${rw[1]}" r="${rw[2] - 17}" fill="#2b2e33" stroke="#b9bec6" stroke-width="2.5"/>
+    </g>`;
+    s += T(685, 414, 'más arandelas abajo = mangueta sube = chasis más bajo delante', { size: 11 });
+    s += T(W / 2, 472, 'CRG: delantera baja → más sobreviraje y mordida de entrada · alta → más subviraje · lluvia → lo más alta posible', { size: 11 });
     return s + '</svg>';
   }
 
@@ -203,13 +274,13 @@
     s += T(130, cy - step + 4, '+5', { anchor: 'end', size: 12 }) + T(130, cy + 4, '0', { anchor: 'end', size: 12, fill: C.acc, bold: true }) + T(130, cy + step + 4, '−5', { anchor: 'end', size: 12 });
     s += T(cx - step * 1.6, 445, '−5', { size: 12 }) + T(cx, 445, '0', { size: 12, fill: C.acc, bold: true }) + T(cx + step * 1.6, 445, '+5', { size: 12 });
     s += T(80, cy - 70, 'altura', { fill: C.acc, size: 12, bold: true, rot: -90 }) + T(cx, 465, 'batalla (mm) · el soporte gira para avanzar/retrasar el eje', { fill: C.acc, size: 12, bold: true });
+    s += `<line x1="200" y1="104" x2="160" y2="104" stroke="${C.fg2}" stroke-width="2" marker-end="url(#akt-arr)"/>` + T(214, 108, 'delante del kart', { anchor: 'start', size: 11 });
     // panel
     s += `<rect x="530" y="90" width="340" height="330" rx="12" fill="#222529" stroke="${C.line}"/>`;
     s += T(700, 122, 'Valores de la sesión', { fill: C.fg, size: 15, bold: true });
     s += T(560, 170, 'Altura trasera', { anchor: 'start', size: 14 }) + T(840, 170, `${h > 0 ? '+' : ''}${fmt(h, 0)} mm`, { anchor: 'end', size: 20, fill: C.acc, bold: true });
     s += T(560, 205, 'Batalla', { anchor: 'start', size: 14 }) + T(840, 205, `${l > 0 ? '+' : ''}${fmt(l, 0)} mm`, { anchor: 'end', size: 20, fill: C.acc, bold: true });
     s += T(700, 260, h > 0 ? 'eje más alto en el chasis = chasis BAJO detrás' : h < 0 ? 'eje más bajo en el chasis = chasis ALTO detrás' : 'posición central', { size: 12, fill: C.fg });
-    s += T(700, 300, 'tornillos en agujeros inferiores = trasera alta', { size: 11 });
     s += T(700, 340, 'CRG: eje en el agujero más alto = chasis bajo (seco)', { size: 11 }) + T(700, 358, 'bajar un agujero = chasis alto (mojado)', { size: 11 }) + T(700, 382, 'Batalla larga → más agarre en curva rápida', { size: 11 }) + T(700, 400, 'Batalla corta → más ágil en curva lenta y chicanes', { size: 11 });
     return s + '</svg>';
   }
